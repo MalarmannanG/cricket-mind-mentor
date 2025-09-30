@@ -1,285 +1,193 @@
-import { useState } from "react";
+// src/components/Assessment.tsx
+import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { CheckCircle, XCircle, Award, RotateCcw } from "lucide-react";
+import { CheckCircle, XCircle, Award, RotateCcw, LucideIcon } from "lucide-react";
 import { toast } from "sonner";
 
-const mockQuestions = [
-  {
-    id: 1,
-    question: "How do you typically handle pressure during a crucial match situation?",
-    options: [
-      "I stay calm and focused on the process",
-      "I feel nervous but try to push through",
-      "I get overwhelmed and my performance suffers",
-      "I avoid thinking about the pressure"
-    ],
-    correctAnswer: 0
-  },
-  {
-    id: 2,
-    question: "When you make a mistake during play, what's your immediate response?",
-    options: [
-      "I quickly forget it and focus on the next ball",
-      "I analyze what went wrong briefly then move on",
-      "I keep thinking about it for several balls",
-      "I get frustrated and it affects my next few plays"
-    ],
-    correctAnswer: 1
-  },
-  {
-    id: 3,
-    question: "How do you prepare mentally before going out to bat?",
-    options: [
-      "I visualize successful shots and positive outcomes",
-      "I review the match situation and strategy",
-      "I try not to think too much about it",
-      "I worry about various things that could go wrong"
-    ],
-    correctAnswer: 0
-  },
-  {
-    id: 4,
-    question: "During a poor performance, how do you maintain motivation?",
-    options: [
-      "I remind myself of past successes and keep trying",
-      "I focus on small improvements rather than the big picture",
-      "I find it difficult but keep playing",
-      "I lose confidence and struggle to perform"
-    ],
-    correctAnswer: 0
-  },
-  {
-    id: 5,
-    question: "How do you deal with criticism from coaches or teammates?",
-    options: [
-      "I listen carefully and use it to improve",
-      "I accept it but sometimes feel hurt",
-      "I take it personally and get defensive",
-      "I ignore it completely"
-    ],
-    correctAnswer: 0
-  },
-  // Adding 15 more questions to reach 20 total
-  {
-    id: 6,
-    question: "When facing a very aggressive fast bowler, what's your mental approach?",
-    options: [
-      "I stay composed and wait for my opportunities",
-      "I feel intimidated but try to cope",
-      "I become overly aggressive in response",
-      "I lose confidence and play defensively"
-    ],
-    correctAnswer: 0
-  },
-  {
-    id: 7,
-    question: "How do you handle crowd noise during important matches?",
-    options: [
-      "I use it as energy and motivation",
-      "I try to block it out and focus",
-      "It distracts me but I manage",
-      "It makes me nervous and affects my game"
-    ],
-    correctAnswer: 0
-  },
-  {
-    id: 8,
-    question: "What's your approach when your team is in a difficult situation?",
-    options: [
-      "I take extra responsibility and try to lead",
-      "I stick to my role and do my best",
-      "I feel the pressure but continue playing",
-      "I worry about letting the team down"
-    ],
-    correctAnswer: 0
-  },
-  {
-    id: 9,
-    question: "How do you maintain concentration during long batting sessions?",
-    options: [
-      "I break it down into small goals and stay present",
-      "I remind myself of the importance of each ball",
-      "I struggle but try to keep going",
-      "I find my mind wandering often"
-    ],
-    correctAnswer: 0
-  },
-  {
-    id: 10,
-    question: "When you're not selected for an important match, how do you respond?",
-    options: [
-      "I use it as motivation to work harder",
-      "I'm disappointed but accept the decision",
-      "I feel dejected but eventually get over it",
-      "I lose confidence in my abilities"
-    ],
-    correctAnswer: 0
-  },
-  {
-    id: 11,
-    question: "How do you handle success and praise after a good performance?",
-    options: [
-      "I appreciate it but stay focused on improvement",
-      "I enjoy it but don't let it get to my head",
-      "I feel good but worry about maintaining the level",
-      "I become overconfident for the next game"
-    ],
-    correctAnswer: 0
-  },
-  {
-    id: 12,
-    question: "What's your mental state during practice sessions?",
-    options: [
-      "I'm fully focused and treat each ball seriously",
-      "I'm mostly focused but sometimes relaxed",
-      "I go through the motions but lack intensity",
-      "I'm often distracted and not fully present"
-    ],
-    correctAnswer: 0
-  },
-  {
-    id: 13,
-    question: "How do you deal with umpiring decisions that go against you?",
-    options: [
-      "I accept them and move on immediately",
-      "I'm frustrated but control my emotions",
-      "I show my displeasure but continue playing",
-      "I get very upset and it affects my game"
-    ],
-    correctAnswer: 0
-  },
-  {
-    id: 14,
-    question: "When facing spin bowling on a turning pitch, what's your mindset?",
-    options: [
-      "I see it as a challenge and adapt my technique",
-      "I'm cautious but confident in my ability",
-      "I feel uncertain but try my best",
-      "I'm worried about getting out"
-    ],
-    correctAnswer: 0
-  },
-  {
-    id: 15,
-    question: "How do you prepare for matches against stronger opposition?",
-    options: [
-      "I see it as an opportunity to test myself",
-      "I prepare extra hard and stay positive",
-      "I'm nervous but try to stay confident",
-      "I'm intimidated by their reputation"
-    ],
-    correctAnswer: 0
-  },
-  {
-    id: 16,
-    question: "What's your approach when you're the last recognized batsman?",
-    options: [
-      "I embrace the responsibility and play positively",
-      "I'm nervous but determined to contribute",
-      "I feel the pressure but try to cope",
-      "I'm overwhelmed by the expectations"
-    ],
-    correctAnswer: 0
-  },
-  {
-    id: 17,
-    question: "How do you handle teammates who are negative or discouraging?",
-    options: [
-      "I stay positive and try to lift the team mood",
-      "I focus on my own game and ignore negativity",
-      "I'm affected but try to stay motivated",
-      "Their negativity brings down my confidence"
-    ],
-    correctAnswer: 0
-  },
-  {
-    id: 18,
-    question: "When you're having a bad day with the bat, how do you respond?",
-    options: [
-      "I work on my technique and mental approach",
-      "I analyze what's going wrong and adjust",
-      "I hope things will improve in the next game",
-      "I lose confidence and doubt my abilities"
-    ],
-    correctAnswer: 0
-  },
-  {
-    id: 19,
-    question: "How do you maintain focus when not directly involved in play?",
-    options: [
-      "I actively support teammates and study the game",
-      "I try to stay engaged but sometimes zone out",
-      "I'm somewhat distracted but present",
-      "I often lose focus and think about other things"
-    ],
-    correctAnswer: 0
-  },
-  {
-    id: 20,
-    question: "What's your mindset when chasing a challenging target?",
-    options: [
-      "I'm excited by the challenge and believe we can do it",
-      "I'm determined but realistic about the difficulty",
-      "I'm hopeful but worried about the pressure",
-      "I'm pessimistic about our chances"
-    ],
-    correctAnswer: 0
-  }
-];
+// Firestore API helpers (adjust path if you put API files elsewhere)
+import { getQuestionsWithOptions } from "@/api/tests";
+import { evaluateAndSaveResult } from "@/api/results";
 
-export const Assessment = () => {
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [answers, setAnswers] = useState<number[]>([]);
-  const [showResults, setShowResults] = useState(false);
-  const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
 
-  const handleAnswer = (answerIndex: number) => {
-    setSelectedAnswer(answerIndex);
-  };
+// --- TYPE DEFINITIONS ---
 
-  const nextQuestion = () => {
-    if (selectedAnswer !== null) {
-      const newAnswers = [...answers, selectedAnswer];
-      setAnswers(newAnswers);
-      
-      if (currentQuestion < mockQuestions.length - 1) {
-        setCurrentQuestion(currentQuestion + 1);
-        setSelectedAnswer(null);
-      } else {
-        setShowResults(true);
-        toast.success("Assessment completed!");
+/** Represents a single option for a question. */
+interface QuestionOption {
+  id: string; // e.g., 'A', 'B'
+  text: string;
+  mark: number; // The score/mark associated with this choice
+  logic?: string; // Explanation for the choice
+}
+
+/** Represents a single question with its options. */
+interface AssessmentQuestion {
+  id: string; // e.g., 'Q1'
+  text: string;
+  order: number;
+  options: QuestionOption[];
+}
+
+/** Map of question IDs to the selected option ID. */
+type AnswersMap = Record<string, string>; // { [questionId]: optionId }
+
+/** Detailed evaluation for a single question. */
+interface PerQuestionEvaluation {
+  questionId: string;
+  optionId: string;
+  mark: number; // Score obtained for this question
+  logic?: string; // Reason/logic returned from evaluation
+}
+
+/** Overall assessment evaluation result. */
+interface AssessmentEvaluation {
+  rawScore: number;
+  maxScore: number;
+  percent: number;
+  perQuestion: PerQuestionEvaluation[];
+}
+
+/** Props for the Assessment component. */
+interface AssessmentProps {
+  testId?: string; // default 'Quarter1_Assessment'
+  playerId?: string; // default 'U001' (replace with auth uid in real app)
+}
+
+// --- COMPONENT START ---
+
+export const Assessment = ({ testId = "Test002", playerId = "U001" }: AssessmentProps) => {
+  const [loading, setLoading] = useState<boolean>(true);
+  const [questions, setQuestions] = useState<AssessmentQuestion[]>([]); // Array of typed questions
+  const [currentIndex, setCurrentIndex] = useState<number>(0);
+  const [selectedOptionId, setSelectedOptionId] = useState<string | null>(null); // 'A' | 'B' | ... or null
+  const [answersMap, setAnswersMap] = useState<AnswersMap>({}); // Typed answers map
+  const [showResults, setShowResults] = useState<boolean>(false);
+  const [evaluation, setEvaluation] = useState<AssessmentEvaluation | null>(null); // Typed evaluation object or null
+  const [saving, setSaving] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let mounted = true;
+    async function load() {
+      setLoading(true);
+      try {
+        // Explicitly type the result from the API call
+        const qs: AssessmentQuestion[] = await getQuestionsWithOptions(testId);
+        if (!mounted) return;
+        setQuestions(qs || []);
+      } catch (err) {
+        console.error("Failed to load questions:", err);
+        // Type assertion for error is often needed for dynamic errors
+        setError(`Failed to load questions: ${err instanceof Error ? err.message : String(err)}`);
+        toast.error("Failed to load questions from Firestore");
+      } finally {
+        if (mounted) setLoading(false);
       }
     }
-  };
+    load();
+    return () => { mounted = false; };
+  }, [testId]);
 
-  const resetAssessment = () => {
-    setCurrentQuestion(0);
-    setAnswers([]);
+  function handleSelect(optionId: string): void {
+    setSelectedOptionId(optionId);
+  }
+
+  async function handleNext(): Promise<void> {
+    const q = questions[currentIndex];
+    if (!q) return;
+    if (selectedOptionId == null) {
+      toast.error("Please select an answer");
+      return;
+    }
+
+    // Prepare a local answers map including this selection
+    const newAnswers: AnswersMap = { ...answersMap, [q.id]: selectedOptionId };
+    setAnswersMap(newAnswers);
+
+    // move to next or finish
+    if (currentIndex < questions.length - 1) {
+      setCurrentIndex(currentIndex + 1);
+      // set selectedOptionId to whatever previous answer existed for next question, or null
+      const nextQ = questions[currentIndex + 1];
+      // Use the typed answers map for lookup
+      setSelectedOptionId(newAnswers[nextQ?.id] ?? null);
+    } else {
+      // last question -> submit
+      await submitAndSave(newAnswers);
+    }
+  }
+
+  async function submitAndSave(answersPayload: AnswersMap): Promise<void> {
+    setSaving(true);
+    try {
+      // Call API which evaluates and persists the result
+      // Assuming evaluateAndSaveResult returns { id: string, evaluation: AssessmentEvaluation }
+      const res: { id: string, evaluation: AssessmentEvaluation } = await evaluateAndSaveResult(testId, playerId, answersPayload);
+      // API returns { id, evaluation }
+      setEvaluation(res.evaluation ?? null);
+      setShowResults(true);
+      toast.success("Assessment completed and saved.");
+    } catch (err) {
+      console.error("Error saving result:", err);
+      toast.error("Error saving result");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  function handleReset(): void {
+    setCurrentIndex(0);
+    setAnswersMap({});
+    setSelectedOptionId(null);
     setShowResults(false);
-    setSelectedAnswer(null);
-  };
+    setEvaluation(null);
+  }
 
-  const calculateScore = () => {
-    const correctAnswers = answers.filter((answer, index) => 
-      answer === mockQuestions[index].correctAnswer
-    ).length;
-    return Math.round((correctAnswers / mockQuestions.length) * 100);
-  };
+  // Define the structure for the score category result
+  interface ScoreCategory {
+    label: string;
+    color: string;
+    icon: LucideIcon; // Use LucideIcon type for the icon component
+  }
 
-  const getScoreCategory = (score: number) => {
+  // Helpers to compute UI values when evaluation exists
+  const positiveCount: number = evaluation
+    ? evaluation.perQuestion.filter(p => p.mark > 0).length
+    : 0;
+  const negativeCount: number = evaluation
+    ? evaluation.perQuestion.filter(p => p.mark <= 0).length
+    : 0;
+
+  function getScoreCategory(score: number): ScoreCategory {
     if (score >= 80) return { label: "Excellent", color: "bg-success", icon: Award };
     if (score >= 60) return { label: "Good", color: "bg-primary", icon: CheckCircle };
     if (score >= 40) return { label: "Fair", color: "bg-warning", icon: CheckCircle };
     return { label: "Needs Improvement", color: "bg-destructive", icon: XCircle };
-  };
+  }
 
-  if (showResults) {
-    const score = calculateScore();
-    const category = getScoreCategory(score);
-    const CategoryIcon = category.icon;
+  if (loading) {
+    return (
+      <div className="p-6">
+        <div className="text-center">Loading assessment…</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="p-6">
+        <div className="text-center text-destructive">Error: {error}</div>
+      </div>
+    );
+  }
+
+  // Show results screen
+  if (showResults && evaluation) {
+    const score: number = evaluation.percent;
+    const category: ScoreCategory = getScoreCategory(score);
+    const CategoryIcon: LucideIcon = category.icon; // Explicitly typed
 
     return (
       <div className="pb-20 p-4 space-y-6 min-h-screen bg-gradient-to-br from-background to-muted/30">
@@ -297,7 +205,7 @@ export const Assessment = () => {
               <div className="text-lg opacity-90">{category.label}</div>
             </div>
             <div className="text-sm opacity-80">
-              You answered {answers.filter((answer, index) => answer === mockQuestions[index].correctAnswer).length} out of {mockQuestions.length} questions correctly
+              You scored {evaluation.rawScore} out of {evaluation.maxScore} (raw/max)
             </div>
           </CardContent>
         </Card>
@@ -310,18 +218,18 @@ export const Assessment = () => {
             <div className="grid grid-cols-2 gap-4 text-center">
               <div className="p-3 rounded-lg bg-success/10">
                 <div className="text-2xl font-bold text-success">
-                  {answers.filter((answer, index) => answer === mockQuestions[index].correctAnswer).length}
+                  {positiveCount}
                 </div>
-                <div className="text-sm text-muted-foreground">Correct</div>
+                <div className="text-sm text-muted-foreground">Positive Picks</div>
               </div>
               <div className="p-3 rounded-lg bg-destructive/10">
                 <div className="text-2xl font-bold text-destructive">
-                  {mockQuestions.length - answers.filter((answer, index) => answer === mockQuestions[index].correctAnswer).length}
+                  {negativeCount}
                 </div>
-                <div className="text-sm text-muted-foreground">Incorrect</div>
+                <div className="text-sm text-muted-foreground">Negative Picks</div>
               </div>
             </div>
-            
+
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
                 <span>Mental Resilience Score</span>
@@ -329,11 +237,31 @@ export const Assessment = () => {
               </div>
               <Progress value={score} className="h-2" />
             </div>
+
+            <div>
+              <h4 className="text-sm font-medium mb-2">Per question summary</h4>
+              <div className="space-y-3">
+                {evaluation.perQuestion.map((pq: PerQuestionEvaluation) => {
+                  // find question and chosen option text
+                  const q = questions.find(x => x.id === pq.questionId);
+                  const chosenOpt = q?.options?.find(o => o.id === pq.optionId);
+                  return (
+                    <div key={pq.questionId} className="p-3 border rounded">
+                      <div className="text-sm font-semibold">{q?.order}. {q?.text}</div>
+                      {/* Optional chaining is crucial here because q and chosenOpt might be undefined */}
+                      <div className="text-sm mt-1">Selected: <strong>{chosenOpt?.id}</strong> — {chosenOpt?.text}</div>
+                      <div className="text-xs opacity-80 mt-1">Mark: {pq.mark} • Reason: {pq.logic ?? chosenOpt?.logic}</div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
           </CardContent>
         </Card>
 
-        <Button 
-          onClick={resetAssessment}
+        <Button
+          onClick={handleReset}
           className="w-full bg-gradient-field hover:opacity-90 transition-all"
         >
           <RotateCcw size={16} className="mr-2" />
@@ -343,8 +271,9 @@ export const Assessment = () => {
     );
   }
 
-  const progress = ((currentQuestion + 1) / mockQuestions.length) * 100;
-  const question = mockQuestions[currentQuestion];
+  // Render the current question
+  const currentQuestion: AssessmentQuestion | undefined = questions[currentIndex];
+  const progress: number = questions.length ? ((currentIndex + 1) / questions.length) * 100 : 0;
 
   return (
     <div className="pb-20 p-4 space-y-6 min-h-screen bg-gradient-to-br from-background to-muted/30">
@@ -360,7 +289,7 @@ export const Assessment = () => {
       <Card className="shadow-card">
         <CardContent className="pt-6">
           <div className="flex justify-between text-sm mb-2">
-            <span>Question {currentQuestion + 1} of {mockQuestions.length}</span>
+            <span>Question {currentIndex + 1} of {questions.length}</span>
             <span>{Math.round(progress)}% Complete</span>
           </div>
           <Progress value={progress} className="h-2" />
@@ -371,28 +300,29 @@ export const Assessment = () => {
       <Card className="shadow-card">
         <CardHeader>
           <CardTitle className="text-lg">
-            {question.question}
+            {currentQuestion?.text}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
-          {question.options.map((option, index) => (
+          {/* Optional chaining ensures mapping only happens if options exists */}
+          {currentQuestion?.options?.map((opt: QuestionOption) => (
             <button
-              key={index}
-              onClick={() => handleAnswer(index)}
+              key={opt.id}
+              onClick={() => handleSelect(opt.id)}
               className={`w-full p-4 text-left rounded-lg border-2 transition-all ${
-                selectedAnswer === index
+                selectedOptionId === opt.id
                   ? "border-primary bg-primary/10 text-primary"
                   : "border-border hover:border-primary/50 hover:bg-muted/50"
               }`}
             >
               <div className="flex items-start gap-3">
-                <Badge 
-                  variant={selectedAnswer === index ? "default" : "outline"}
+                <Badge
+                  variant={selectedOptionId === opt.id ? "default" : "outline"}
                   className="mt-0.5"
                 >
-                  {String.fromCharCode(65 + index)}
+                  {opt.id}
                 </Badge>
-                <span className="flex-1">{option}</span>
+                <span className="flex-1">{opt.text}</span>
               </div>
             </button>
           ))}
@@ -400,13 +330,15 @@ export const Assessment = () => {
       </Card>
 
       {/* Next Button */}
-      <Button 
-        onClick={nextQuestion}
-        disabled={selectedAnswer === null}
+      <Button
+        onClick={handleNext}
+        disabled={selectedOptionId === null || saving}
         className="w-full bg-gradient-field hover:opacity-90 transition-all disabled:opacity-50"
       >
-        {currentQuestion === mockQuestions.length - 1 ? "Complete Assessment" : "Next Question"}
+        {currentIndex === questions.length - 1 ? (saving ? "Saving..." : "Complete Assessment") : "Next Question"}
       </Button>
     </div>
   );
 };
+
+export default Assessment;

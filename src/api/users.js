@@ -1,0 +1,66 @@
+// src/api/users.js
+import { db, serverTimestamp } from "../firebase";
+import {
+  doc,
+  setDoc,
+  getDoc,
+  updateDoc,
+  deleteDoc,
+  collection,
+  query,
+  where,
+  getDocs,
+  onSnapshot
+} from "firebase/firestore";
+
+/**
+ * Create or overwrite a user doc with a specific ID (U001 style)
+ * use setDoc for deterministic IDs
+ */
+export async function createUser(userId, data) {
+  const ref = doc(db, "users", userId);
+  await setDoc(ref, { ...data, createdAt: serverTimestamp() }, { merge: true });
+  return userId;
+}
+
+export async function getUser(userId) {
+  const ref = doc(db, "users", userId);
+  const snap = await getDoc(ref);
+  return snap.exists() ? { id: snap.id, ...snap.data() } : null;
+}
+
+export async function updateUser(userId, updates) {
+  const ref = doc(db, "users", userId);
+  await updateDoc(ref, updates);
+  return true;
+}
+
+export async function deleteUser(userId) {
+  await deleteDoc(doc(db, "users", userId));
+  return true;
+}
+
+/**
+ * List all users in a team (players). Use teamId field on users.
+ */
+export async function listUsersByTeam(teamId) {
+  const q = query(collection(db, "users"), where("teamId", "==", teamId));
+  const snap = await getDocs(q);
+  return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+}
+
+/**
+ * Real-time subscription to players in a team
+ * callback receives array of user objects
+ * returns unsubscribe function
+ */
+export function subscribeUsersByTeam(teamId, callback) {
+  const q = query(collection(db, "users"), where("teamId", "==", teamId));
+  const unsub = onSnapshot(q, snap => {
+    const items = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    callback(items);
+  }, err => {
+    console.error("subscribeUsersByTeam error:", err);
+  });
+  return unsub;
+}
