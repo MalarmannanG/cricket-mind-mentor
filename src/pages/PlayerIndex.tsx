@@ -18,7 +18,7 @@ const PlayerIndex = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const isAuthenticated = localStorage.getItem("isAuthenticated");
+    const isAuthenticated = localStorage.getItem("currentUser");
     if (!isAuthenticated) {
       navigate("/login");
     }
@@ -40,9 +40,8 @@ const PlayerIndex = () => {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem("isAuthenticated");
-    localStorage.removeItem("userEmail");
-    localStorage.removeItem("userName");
+    localStorage.removeItem("currentUser");
+    localStorage.removeItem("site");
     navigate("/login");
   };
 

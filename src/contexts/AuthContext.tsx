@@ -39,12 +39,13 @@ const AuthProvider = ({ children }) => {
         setUser(user);
         setToken(user.name);
         localStorage.setItem('currentUser', JSON.stringify(user));
+        localStorage.setItem("site",JSON.stringify(user))
         toast({
           title: "Login successful",
           description: "Welcome back to Cricket Coach!",
         });
         if (user.role === 'coach') {
-          navigate("/player-dashboard");
+          navigate("/coach-dashboard");
         }
         else if (user.role === 'player') {
           navigate("/player-dashboard");

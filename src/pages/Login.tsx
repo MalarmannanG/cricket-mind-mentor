@@ -14,7 +14,7 @@ import { useAuth } from "@/contexts/AuthContext";
 const Login = () => {
 
 
-  //const { loginAction } = useAuth();
+  const { loginAction } = useAuth();
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
   const [signupEmail, setSignupEmail] = useState("");
@@ -23,7 +23,7 @@ const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
-  const auth = useAuth();
+  //const auth = useAuth();
   const [error, setError] = useState('');
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -31,7 +31,7 @@ const Login = () => {
     setIsLoading(true);
     if (loginEmail && loginPassword) {
       setIsLoading(true);
-      auth.loginAction({ username: loginEmail, password: loginPassword });
+      await loginAction({ username: loginEmail, password: loginPassword });
       setIsLoading(false);
     }
   }
