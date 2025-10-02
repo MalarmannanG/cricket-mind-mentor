@@ -14,6 +14,7 @@ const navItems = [
 ];
 
 export const BottomNavigation = ({ activeTab, onTabChange }: BottomNavigationProps) => {
+  
   return (
     <div className="fixed bottom-0 left-0 right-0 bg-card border-t border-border shadow-elevated">
       <div className="flex items-center justify-around h-16 max-w-md mx-auto">

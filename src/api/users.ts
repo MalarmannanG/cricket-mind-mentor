@@ -28,7 +28,25 @@ export async function getUser(userId) {
   const snap = await getDoc(ref);
   return snap.exists() ? { id: snap.id, ...snap.data() } : null;
 }
-
+export async function getUserByEmail(userId) {
+  const collectionRef = collection(db, "users");
+  const q = query(
+    collectionRef,
+    where("email" as string, "==", userId)
+  );
+  try {
+    const querySnapshot = await getDocs(q);
+    let filteredDocs: any;
+    querySnapshot.forEach((doc) => {
+      filteredDocs = ({ id: doc.id, ...doc.data()  });
+    });
+    return filteredDocs;
+  } catch (error) {
+    console.error("Error filtering documents:", error);
+    return [];
+  }
+  //return snap.size > 0 ? { ...snap } : null;
+}
 export async function updateUser(userId, updates) {
   const ref = doc(db, "users", userId);
   await updateDoc(ref, updates);
