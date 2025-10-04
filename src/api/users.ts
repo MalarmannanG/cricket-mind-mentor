@@ -10,17 +10,39 @@ import {
   query,
   where,
   getDocs,
-  onSnapshot
+  onSnapshot,
+  addDoc
 } from "firebase/firestore";
 
 /**
  * Create or overwrite a user doc with a specific ID (U001 style)
  * use setDoc for deterministic IDs
  */
-export async function createUser(userId, data) {
-  const ref = doc(db, "users", userId);
-  await setDoc(ref, { ...data, createdAt: serverTimestamp() }, { merge: true });
-  return userId;
+export async function createUser(data) {
+  // const ref = doc(db, "users", userId);
+  // await setDoc(ref, { ...data, createdAt: serverTimestamp() }, { merge: true });
+  // return userId;
+  const user = await getUserByEmail(data.email);
+  if (user) {
+    return null; // User already exists
+  } else {
+    return await addDoc(collection(db, "users"), { ...data, createdAt: serverTimestamp() });
+  }
+
+}
+
+export async function getUserAll() {
+  const collectionRef = collection(db, "users");
+   const q = query(
+    collectionRef,
+    where("role" as string, "==", "player")
+  );
+  const snap = await getDocs(q);
+    let filteredDocs: any[] = [];
+    snap.forEach((doc) => {
+      filteredDocs.push({ id: doc.id, ...doc.data() });
+    });
+    return filteredDocs;
 }
 
 export async function getUser(userId) {
@@ -38,7 +60,7 @@ export async function getUserByEmail(userId) {
     const querySnapshot = await getDocs(q);
     let filteredDocs: any;
     querySnapshot.forEach((doc) => {
-      filteredDocs = ({ id: doc.id, ...doc.data()  });
+      filteredDocs = ({ id: doc.id, ...doc.data() });
     });
     return filteredDocs;
   } catch (error) {

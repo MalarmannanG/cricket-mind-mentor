@@ -15,7 +15,7 @@ interface NavigationProps {
 }
 
 export function Navigation({ activeTab, onTabChange }: NavigationProps) {
-  const { role } = useAuth();
+  const { user } = useAuth();
 
   const coachTabs = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -32,7 +32,7 @@ export function Navigation({ activeTab, onTabChange }: NavigationProps) {
     { id: 'daily-plan', label: 'Daily Plan', icon: Calendar }
   ];
 
-  const tabs = role === 'coach' ? coachTabs : playerTabs;
+  const tabs = user.role === 'coach' ? coachTabs : playerTabs;
 
   return (
     <div className="flex gap-2 flex-wrap mb-8 p-4 bg-card rounded-lg border">

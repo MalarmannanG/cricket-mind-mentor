@@ -5,6 +5,19 @@ export interface Question {
   marks: number;
   category: string;
 }
+export interface Assessments {
+  id?: string;
+  question: string;
+  options: IOptions[];
+  order : number;
+}
+
+export interface IOptions {
+  id:string;
+  logic: string;
+  mark: number;
+  text: string;
+}
 
 export interface PlayerAnswer {
   questionId: string;

@@ -6,45 +6,88 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Save, Star, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
+import { getUserAll } from "@/api/users";
+import { listResultsByPlayer } from "@/api/results";
 
-const mockPlayerData = {
-  Rahul: {
-    strengths: ["Strong mental resilience", "Excellent focus under pressure", "Positive self-talk"],
-    blockers: ["Perfectionist tendencies", "Anxiety before big matches"],
-    actionPlan: ["Practice breathing exercises daily", "Work on positive visualization"],
-  },
-  Arjun: {
-    strengths: ["Natural confidence", "Good pressure management", "Team leadership"],
-    blockers: ["Overconfidence in easy situations", "Difficulty adapting to strategy changes"],
-    actionPlan: ["Mindfulness training", "Scenario-based mental preparation"],
-  },
-  Vikram: {
-    strengths: ["Technical precision", "Good listening skills"],
-    blockers: ["Low self-confidence", "Fear of failure", "Negative thought patterns"],
-    actionPlan: ["Confidence building exercises", "Regular one-on-one sessions", "Success visualization"],
-  },
-};
+interface IPlayers {
+  name: string;
+  id: string;
+}
 
-export const PlayerReports = () => {
-  const [selectedPlayer, setSelectedPlayer] = useState<string>("");
+
+export const PlayerReports = ({ playerId }) => {
+  const [loading, setLoading] = useState<boolean>(true);
+  const { user } = useAuth();
+  const [selectedPlayer, setSelectedPlayer] = useState<IPlayers | null>(null);
+  const [players, setPlayers] = useState<IPlayers[]>([]);
   const [notes, setNotes] = useState<string>("");
-
+  const [playerData, setPlayerData] = useState<{
+    strengths: string[];
+    blockers: string[];
+    actionPlan: string[];
+  } | null>(null);
   // Load notes from localStorage
   useEffect(() => {
+    async function fetchTestResult() {
+      setLoading(true);
+      try {
+        const qs: any[] = await listResultsByPlayer(selectedPlayer?.id);
+        if (qs.length > 0) {
+          const latest = qs[0]
+          latest.perQuestion.filter(a => a.mark > 0)
+          setPlayerData({
+            strengths: latest.perQuestion.filter(a => a.mark > 0).map(a => a.logic) || [],
+            blockers: latest.perQuestion.filter(a => a.mark < -1).map(a => a.logic) || [],
+            actionPlan: latest.actionPlan || []
+          });
+
+        }
+
+
+      } catch (err) {
+        console.error("Error fetching questions:", err);
+        toast.error("Error fetching questions");
+      } finally {
+        setLoading(false);
+      }
+    }
     if (selectedPlayer) {
+      fetchTestResult();
       const savedNotes = localStorage.getItem(`coach-notes-${selectedPlayer}`);
-      setNotes(savedNotes || "");
+
     }
   }, [selectedPlayer]);
+  useEffect(() => {
+    if (user?.role === "player") {
+      setSelectedPlayer(user ? { name: user.name, id: user.id } : null);
+    }
+    else {
 
+      getUserAll().then(async (res: any[]) => {
+        console.log('Fetched users:', res);
+        setPlayers(res.map((u: any) => ({ name: u.name, id: u.id })));
+        if (playerId) {
+          setSelectedPlayer(res.find((p: any) => p.id === playerId) ? { name: res.find((p: any) => p.id === playerId).name, id: playerId } : null);
+        }
+      }).catch(err => {
+        console.error('Error fetching users:', err);
+      });
+    }
+  }, []);
   const saveNotes = () => {
     if (selectedPlayer && notes.trim()) {
       localStorage.setItem(`coach-notes-${selectedPlayer}`, notes);
       toast.success("Notes saved successfully!");
     }
   };
+  const onValueChange = (playerId: string) => {
 
-  const playerData = selectedPlayer ? mockPlayerData[selectedPlayer as keyof typeof mockPlayerData] : null;
+    setSelectedPlayer(players?.find(p => p.id === playerId) || null);
+
+  }
+
+  //const playerData = selectedPlayer ? players[selectedPlayer as keyof typeof players] : null;
 
   return (
     <div className="pb-20 p-4 space-y-6 min-h-screen bg-gradient-to-br from-background to-muted/30">
@@ -62,14 +105,14 @@ export const PlayerReports = () => {
           <CardTitle>Select Player</CardTitle>
         </CardHeader>
         <CardContent>
-          <Select value={selectedPlayer} onValueChange={setSelectedPlayer}>
+          <Select value={selectedPlayer?.id} onValueChange={onValueChange}>
             <SelectTrigger className="w-full">
               <SelectValue placeholder="Choose a player to view report" />
             </SelectTrigger>
             <SelectContent>
-              {Object.keys(mockPlayerData).map((player) => (
-                <SelectItem key={player} value={player}>
-                  {player}
+              {players.map((player) => (
+                <SelectItem key={player.id} value={player.id}>
+                  {player.name}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -90,7 +133,7 @@ export const PlayerReports = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-2">
-                {playerData.strengths.map((strength, index) => (
+                {playerData?.strengths.map((strength, index) => (
                   <div key={index} className="flex items-center gap-2">
                     <Badge variant="secondary" className="bg-success/20 text-success border-success/30">
                       {index + 1}
@@ -112,7 +155,7 @@ export const PlayerReports = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-2">
-                {playerData.blockers.map((blocker, index) => (
+                {playerData?.blockers.map((blocker, index) => (
                   <div key={index} className="flex items-center gap-2">
                     <Badge variant="outline" className="border-warning/50 text-warning">
                       {index + 1}
@@ -131,7 +174,7 @@ export const PlayerReports = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-2">
-                {playerData.actionPlan.map((action, index) => (
+                {playerData?.actionPlan.map((action, index) => (
                   <div key={index} className="flex items-start gap-2">
                     <Badge className="bg-primary text-primary-foreground mt-0.5">
                       {index + 1}
@@ -148,7 +191,7 @@ export const PlayerReports = () => {
             <CardHeader>
               <CardTitle>Coach Notes</CardTitle>
               <p className="text-sm text-muted-foreground">
-                Private notes for {selectedPlayer} (saved locally)
+                Private notes for {selectedPlayer.name} (saved locally)
               </p>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -158,7 +201,7 @@ export const PlayerReports = () => {
                 onChange={(e) => setNotes(e.target.value)}
                 className="min-h-[120px] resize-none"
               />
-              <Button 
+              <Button
                 onClick={saveNotes}
                 className="w-full bg-gradient-field hover:opacity-90 transition-all"
                 disabled={!notes.trim()}

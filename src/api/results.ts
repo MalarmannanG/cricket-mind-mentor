@@ -98,7 +98,11 @@ export async function listResultsByTest(testId) {
   const snap = await getDocs(q);
   return snap.docs.map(d => ({ id: d.id, ...d.data() }));
 }
-
+export async function listResultsByPlayer(playerId) {
+  const q = query(collection(db, "results"), where("playerId", "==", playerId));
+  const snap = await getDocs(q);
+  return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+}
 /**
  * Subscribe to results for a test (real-time)
  */

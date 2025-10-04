@@ -8,6 +8,8 @@ import { DailyPlan } from "@/components/screens/DailyPlan";
 import { ExportReport } from "@/components/ExportReport";
 import { Button } from "@/components/ui/button";
 import { FileText, LogOut } from "lucide-react";
+import { CoachDashboard } from "@/components/coach/CoachDashboard";
+import { AssessmentManager } from "@/components/coach/AssessmentManager";
  
  
 
@@ -15,26 +17,30 @@ const CoachIndex = () => {
  
   const [activeTab, setActiveTab] = useState("dashboard");
   const navigate = useNavigate();
-
+  const[playerId, setPlayerId] = useState<string|null>(null);
   useEffect(() => {
     const isAuthenticated = localStorage.getItem("currentUser");
     if (!isAuthenticated) {
       navigate("/login");
     }
   }, [navigate]);
-
+  const  onPlayerSelect = (playerId: string) => {
+    setPlayerId(playerId);
+     setActiveTab("reports");
+    // You might want to pass the playerId to PlayerReports component via state or context
+  }
   const renderScreen = () => {
     switch (activeTab) {
       case "coach-dashboard":
-        return <Dashboard />;
+        return <CoachDashboard onTabChange={onPlayerSelect}/>;
       case "reports":
-        return <PlayerReports />;
+        return <PlayerReports playerId={playerId}/>;
       case "assessment":
-        return <Assessment />;
+        return <AssessmentManager />;
       case "daily":
         return <DailyPlan />;
       default:
-        return <Dashboard />;
+             return <CoachDashboard onTabChange={onPlayerSelect}/>;
     }
   };
 

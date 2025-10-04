@@ -4,8 +4,10 @@ import { Progress } from '@/components/ui/progress';
 import { CheckCircle2, Circle } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
-import { defaultActionPlan, defaultDailyCompletion, initializeMockPlayers } from '@/utils/mockData';
+import {  initializeMockPlayers } from '@/utils/mockData';
 import { userInfo } from '@/contexts/AuthContext';
+import { getDailyCompletionByPlayer } from '@/api/dailyCompletion';
+import { getActionPlanByPlayer } from '@/api/actionPlan';
 
 interface PlayerDashboardProps {
   player: Player;
@@ -16,27 +18,41 @@ interface PlayerDashboardProps {
 export function PlayerDashboard() {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [players, setPlayers] = useLocalStorage<Player[]>('players', []);
-   const [user, setCurrentUser] = useLocalStorage<userInfo>('currentUser', null);
+  const [user, setCurrentUser] = useLocalStorage<userInfo>('currentUser', null);
   const [player, setPlayer] = useLocalStorage<Player>('currentUser', null);
   const [completedCount, setCompletedCount] = useState(0);
-  const[actionPlan, setActionPlan] = useState<ActionPlanItem[]>(defaultActionPlan);
+  const [actionPlan, setActionPlan] = useState<ActionPlanItem[]>([]);
   const [totalCount, setTotalCount] = useState(0);
   const [dailyCompletion, setDailyCompletion] = useState<DailyCompletion>(null);
   const [completionPercentage, setCompletionPercentage] = useState(0);
   useEffect(() => {
+    console.info('user from local storage:', user);
+    if (user) {
+      getDailyCompletionByPlayer(user.id).then((res: any) => {
+        console.log('Fetched daily completion:', res);
+        setDailyCompletion(res);
+        const today = new Date().toISOString().split('T')[0];
+        const todayCompletion = res.find(
+          dc => dc.playerId === player.id && dc.date.toDate().toISOString().split('T')[0] == today
+        );
+        setDailyCompletion(todayCompletion ? todayCompletion : null);
+        const completedCount = todayCompletion ? todayCompletion.items.filter(i => i.completed).length : 0;
+        setCompletedCount(completedCount);
+        const totalCount = todayCompletion ? todayCompletion.items.length : 0;
+        setTotalCount(totalCount);
+        setCompletionPercentage((completedCount / totalCount) * 100);
+
+      });
+      getActionPlanByPlayer(user.id).then((res: any) => {
+        console.log('Fetched action plan:', res);
+        setActionPlan(res ? res.items : []);
+      });
+
+    }
     if (players.length === 0) {
       setPlayers(initializeMockPlayers());
     }
-    const today = new Date().toISOString().split('T')[0];
-    const todayCompletion = defaultDailyCompletion.find(
-      dc => dc.playerId === player.id && dc.date === today
-    );
-    setDailyCompletion(todayCompletion ? todayCompletion : null);
-    const completedCount = todayCompletion ? todayCompletion.items.filter(i => i.completed).length : 0;
-    setCompletedCount(completedCount);
-    const totalCount = todayCompletion ? todayCompletion.items.length : 0;
-    setTotalCount(totalCount);
-    setCompletionPercentage((completedCount / totalCount) * 100);
+
 
 
   }, []);
@@ -79,7 +95,7 @@ export function PlayerDashboard() {
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
-            {actionPlan.map((item) => {
+            {actionPlan && actionPlan?.map((item) => {
               const completion = dailyCompletion?.items.find(i => i.itemId === item.id);
               const isCompleted = completion?.completed || false;
 

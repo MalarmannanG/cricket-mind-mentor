@@ -4,7 +4,6 @@ import { useAuth } from "../contexts/AuthContext";
 
 const PrivateRoute = () => {
   const user = useAuth();
-  debugger;
   if (!user) return <Navigate to="/login" />;
   return <Outlet />;
 };

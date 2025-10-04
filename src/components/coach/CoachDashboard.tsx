@@ -4,17 +4,17 @@ import { TrendingUp, TrendingDown, Users, Award } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { initializeMockPlayers } from '@/utils/mockData';
+import { getUserAll } from '@/api/users';
 
 interface CoachDashboardProps {
-  players: Player[];
+  //players: Player[];
   onTabChange: (playerId: string) => void;
 }
 
-export function CoachDashboard( {onTabChange} : CoachDashboardProps ) {
-
-  const [players, setPlayers] = useLocalStorage<Player[]>('players', []);
+export function CoachDashboard( { onTabChange }: CoachDashboardProps) {
+  const [players, setPlayers] = useState<Player[]>([]);
   const playersWithResults = players.filter(p => p.results);
   const totalScore = playersWithResults.reduce((sum, p) => sum + (p.results?.score || 0), 0);
   const avgScore = playersWithResults.length > 0 ? totalScore / playersWithResults.length : 0;
@@ -26,11 +26,16 @@ export function CoachDashboard( {onTabChange} : CoachDashboardProps ) {
   const worstPlayer = sortedByScore[sortedByScore.length - 1];
     const handleViewPlayer = (playerId: string) => {
     // Navigate to player report view
-    onTabChange('players');
+       onTabChange(playerId);
   };
   useEffect(() => {
     if (players.length === 0) {
-      setPlayers(initializeMockPlayers());
+      getUserAll().then(async(res:any[]) => {
+        console.log('Fetched users:', res);
+        setPlayers(res.filter(u => u.role == 'player'));
+      }).catch(err => {
+        console.error('Error fetching users:', err);
+      });
     }
   }, []);
   return (

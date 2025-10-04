@@ -8,8 +8,8 @@ interface LayoutProps {
 }
 
 export function Layout({ children }: LayoutProps) {
-  const { role, userId, logout } = useAuth();
-
+  const { user, logOut } = useAuth();
+    const { role, name } = user;
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted">
       <header className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-50">
@@ -29,13 +29,13 @@ export function Layout({ children }: LayoutProps) {
               <div className="flex items-center gap-2 text-sm">
                 <User className="h-4 w-4 text-muted-foreground" />
                 <span className="font-medium capitalize">
-                  {role === 'coach' ? 'Coach' : userId}
+                  {role === 'coach' ? 'Coach' : name}
                 </span>
               </div>
               <Button 
                 variant="outline" 
                 size="sm" 
-                onClick={logout}
+                onClick={logOut}
                 className="gap-2"
               >
                 <LogOut className="h-4 w-4" />

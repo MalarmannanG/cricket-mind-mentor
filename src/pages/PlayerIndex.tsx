@@ -9,6 +9,8 @@ import { ExportReport } from "@/components/ExportReport";
 import { Button } from "@/components/ui/button";
 import { FileText, LogOut } from "lucide-react";
 import { PlayerDashboard } from "@/components/player/PlayerDashboard";
+import { AssessmentTest } from "@/components/assessment/AssessmentTest";
+import { useAuth } from "@/contexts/AuthContext";
  
  
 
@@ -16,7 +18,7 @@ const PlayerIndex = () => {
  
   const [activeTab, setActiveTab] = useState("dashboard");
   const navigate = useNavigate();
-
+const {user} = useAuth();
   useEffect(() => {
     const isAuthenticated = localStorage.getItem("currentUser");
     if (!isAuthenticated) {
@@ -29,9 +31,9 @@ const PlayerIndex = () => {
       case "dashboard":
         return <PlayerDashboard  />;
       case "reports":
-        return <PlayerReports />;
+        return <PlayerReports playerId={null}/>;
       case "assessment":
-        return <Assessment />;
+        return <AssessmentTest />;
       case "daily":
         return <DailyPlan />;
       default:
