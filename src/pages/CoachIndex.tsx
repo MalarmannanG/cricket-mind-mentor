@@ -10,11 +10,12 @@ import { Button } from "@/components/ui/button";
 import { FileText, LogOut } from "lucide-react";
 import { CoachDashboard } from "@/components/coach/CoachDashboard";
 import { AssessmentManager } from "@/components/coach/AssessmentManager";
+import { useAuth } from "@/contexts/AuthContext";
  
  
 
 const CoachIndex = () => {
- 
+  
   const [activeTab, setActiveTab] = useState("dashboard");
   const navigate = useNavigate();
   const[playerId, setPlayerId] = useState<string|null>(null);

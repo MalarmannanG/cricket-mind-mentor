@@ -4,10 +4,11 @@ import { Progress } from '@/components/ui/progress';
 import { CheckCircle2, Circle } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
-import {  initializeMockPlayers } from '@/utils/mockData';
-import { userInfo } from '@/contexts/AuthContext';
+import { initializeMockPlayers } from '@/utils/mockData';
+import { useAuth, userInfo } from '@/contexts/AuthContext';
 import { getDailyCompletionByPlayer } from '@/api/dailyCompletion';
 import { getActionPlanByPlayer } from '@/api/actionPlan';
+import { listResultsByPlayer } from '@/api/results';
 
 interface PlayerDashboardProps {
   player: Player;
@@ -16,23 +17,21 @@ interface PlayerDashboardProps {
 }
 
 export function PlayerDashboard() {
-  const [activeTab, setActiveTab] = useState('dashboard');
-  const [players, setPlayers] = useLocalStorage<Player[]>('players', []);
-  const [user, setCurrentUser] = useLocalStorage<userInfo>('currentUser', null);
+  const { setLoading, user } = useAuth();
   const [player, setPlayer] = useLocalStorage<Player>('currentUser', null);
   const [completedCount, setCompletedCount] = useState(0);
   const [actionPlan, setActionPlan] = useState<ActionPlanItem[]>([]);
   const [totalCount, setTotalCount] = useState(0);
   const [dailyCompletion, setDailyCompletion] = useState<DailyCompletion>(null);
   const [completionPercentage, setCompletionPercentage] = useState(0);
+
   useEffect(() => {
     console.info('user from local storage:', user);
-    if (user) {
-      getDailyCompletionByPlayer(user.id).then((res: any) => {
-        console.log('Fetched daily completion:', res);
-        setDailyCompletion(res);
+    async function fetchDailyCompletionByPlayer() {
+      const qs: any[] = await getDailyCompletionByPlayer(user.id);
+      if (qs.length > 0) {
         const today = new Date().toISOString().split('T')[0];
-        const todayCompletion = res.find(
+        const todayCompletion = qs.find(
           dc => dc.playerId === player.id && dc.date.toDate().toISOString().split('T')[0] == today
         );
         setDailyCompletion(todayCompletion ? todayCompletion : null);
@@ -41,21 +40,30 @@ export function PlayerDashboard() {
         const totalCount = todayCompletion ? todayCompletion.items.length : 0;
         setTotalCount(totalCount);
         setCompletionPercentage((completedCount / totalCount) * 100);
-
-      });
-      getActionPlanByPlayer(user.id).then((res: any) => {
+      }
+    }
+    async function fetchTestResult(playerId: string) {
+      const qs: any[] = await listResultsByPlayer(playerId);
+      if (qs.length > 0) {
+        setPlayer(qs[0]);
+      }
+    }
+    if (user) {
+      setLoading(true);
+      getActionPlanByPlayer().then(async (res: any) => {
         console.log('Fetched action plan:', res);
-        setActionPlan(res ? res.items : []);
+        setActionPlan(res ? res : []);
+        await fetchDailyCompletionByPlayer();
+        await fetchTestResult(user.id);
+      }).catch(err => {
+        console.error('Error fetching action plan:', err);
+      }).finally(() => {
+        setLoading(false);
       });
-
     }
-    if (players.length === 0) {
-      setPlayers(initializeMockPlayers());
-    }
-
-
-
   }, []);
+
+
   return (
     <div className="space-y-6">
       <Card>
@@ -81,7 +89,7 @@ export function PlayerDashboard() {
               <div className="p-4 rounded-lg bg-primary/5 border border-primary/20">
                 <h4 className="font-semibold mb-2">Your Latest Score</h4>
                 <p className="text-3xl font-bold text-primary">
-                  {player.results.score.toFixed(1)}%
+                  {player.results.rawScore.toFixed(1)}%
                 </p>
               </div>
             )}

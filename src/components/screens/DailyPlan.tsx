@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Camera, Play, Pause, RotateCcw, Palette } from "lucide-react";
 import { toast } from "sonner";
+import Breathing from "./Breathing";
 
 export const DailyPlan = () => {
   const [breathingTime, setBreathingTime] = useState(180); // 3 minutes in seconds
@@ -260,7 +261,8 @@ export const DailyPlan = () => {
           </p>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="text-center">
+          <Breathing />
+          {/* <div className="text-center">
             <div className="text-4xl font-bold text-success mb-2">
               {formatTime(breathingTime)}
             </div>
@@ -287,7 +289,7 @@ export const DailyPlan = () => {
             >
               <RotateCcw size={16} />
             </Button>
-          </div>
+          </div> */}
         </CardContent>
       </Card>
 

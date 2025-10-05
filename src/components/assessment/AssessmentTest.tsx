@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Question, PlayerAnswer, Assessments, IOptions } from '@/types';
+import { Question, PlayerAnswer, Assessments, IOptions, AssessmentEvaluation, ScoreCategory, PerQuestionEvaluation } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
@@ -20,39 +20,7 @@ interface AssessmentTestProps {
 }
 /** Map of question IDs to the selected option ID. */
 type AnswersMap = Record<string, string>; // { [questionId]: optionId }
-export interface PerQuestionEvaluation {
-  questionId: string;
-  optionId: string;
-  mark: number; // Score obtained for this question
-  logic?: string; // Reason/logic returned from evaluation
-  optionText: string;
-  questionText: string;
-}
 
-/** Overall assessment evaluation result. */
- export interface AssessmentEvaluation {
-  rawScore: number;
-  maxScore: number;
-  percent: number;
-  perQuestion: PerQuestionEvaluation[];
-}
-interface QuestionOption {
-  id: string; // e.g., 'A', 'B'
-  text: string;
-  mark: number; // The score/mark associated with this choice
-  logic?: string; // Explanation for the choice
-}
-interface AssessmentQuestion {
-  id: string; // e.g., 'Q1'
-  question: string;
-  order: number;
-  options: QuestionOption[];
-}
-interface ScoreCategory {
-  label: string;
-  color: string;
-  icon: LucideIcon; // Use LucideIcon type for the icon component
-}
 export function AssessmentTest() {
   const { user } = useAuth()
   const [loading, setLoading] = useState<boolean>(true);
@@ -134,7 +102,6 @@ export function AssessmentTest() {
     setEvaluation(null);
   }
   useEffect(() => {
-     
     async function fetchQuestions() {
       setLoading(true);
       try {

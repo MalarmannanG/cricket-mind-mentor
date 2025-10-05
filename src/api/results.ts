@@ -32,7 +32,7 @@ export async function evaluateAnswers(testId, answersMap) {
 
   for (const q of questions) {
     // max for each question: find best positive mark (max of option.mark or assume 2)
-    const qMax = q.options.reduce((m,o) => Math.max(m, o.mark), -Infinity);
+    const qMax = q.options.reduce((m, o) => Math.max(m, o.mark), -Infinity);
     max += qMax > 0 ? qMax : 0; // only positive marks count to max theoretical positive score
     const selectedId = answersMap[q.id] ?? null;
     const opt = q.options.find(o => o.id === selectedId);
@@ -103,6 +103,18 @@ export async function listResultsByPlayer(playerId) {
   const snap = await getDocs(q);
   return snap.docs.map(d => ({ id: d.id, ...d.data() }));
 }
+
+export async function listResults() {
+  const q = query(collection(db, "results"), orderBy("createdAt", "desc"));
+  const snap = await getDocs(q);
+  let filteredDocs: any[] = [];
+  snap.forEach((doc) => {
+    filteredDocs.push({ id: doc.id, ...doc.data() });
+  });
+  return filteredDocs.sort((a, b) => parseInt(a.order) - parseInt(b.order));
+}
+
+
 /**
  * Subscribe to results for a test (real-time)
  */

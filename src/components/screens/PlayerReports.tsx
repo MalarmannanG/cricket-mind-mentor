@@ -100,7 +100,7 @@ export const PlayerReports = ({ playerId }) => {
       </div>
 
       {/* Player Selection */}
-      <Card className="shadow-card">
+      { user.role == "coach" && <Card className="shadow-card">
         <CardHeader>
           <CardTitle>Select Player</CardTitle>
         </CardHeader>
@@ -118,7 +118,7 @@ export const PlayerReports = ({ playerId }) => {
             </SelectContent>
           </Select>
         </CardContent>
-      </Card>
+      </Card>}
 
       {/* Player Report Content */}
       {playerData && (

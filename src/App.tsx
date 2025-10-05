@@ -8,12 +8,14 @@ import PrivateRoute from "./pages/PrivateRoute";
 import AuthProvider from "./contexts/AuthContext";
 import CoachIndex from "./pages/CoachIndex";
 import PlayerIndex from "./pages/PlayerIndex";
+import { Loader } from "lucide-react";
 const queryClient = new QueryClient();
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <Toaster />
       <Sonner />
+      
       <Router>
         <AuthProvider>
           <Routes>

@@ -10,6 +10,7 @@ import { toast } from '@/hooks/use-toast';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
 import { defaultQuestions } from '@/utils/questions';
 import { createQuestion, getAllQuestions } from '@/api/questions';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface AssessmentManagerProps {
   questions: Question[];
@@ -17,6 +18,7 @@ interface AssessmentManagerProps {
 }
 
 export function AssessmentManager() {
+  const { setLoading } = useAuth();
   const [questions, setQuestions] = useState<Assessments[]>([]);
   const [showAddForm, setShowAddForm] = useState(false);
   const [newQuestion, setNewQuestion] = useState<Assessments>({
@@ -27,9 +29,12 @@ export function AssessmentManager() {
     order: questions.length + 1,
   });
   useEffect(() => {
+     setLoading(true);
     getAllQuestions().then((fetchedQuestions) => {
       console.log('Fetched questions:', fetchedQuestions);
       setQuestions(fetchedQuestions);
+    }).finally(() => {
+      setLoading(false);
     });
   }, []);
   const handleAddQuestion = () => {

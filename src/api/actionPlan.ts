@@ -21,17 +21,13 @@ export async function createActionPlan(data) {
     return await addDoc(collection(db, "ActionPlan"), { ...data, createdAt: serverTimestamp() });
 }
 
-export async function getActionPlanByPlayer(userId) {
+export async function getActionPlanByPlayer() {
   const collectionRef = collection(db, "ActionPlan");
-  const q = query(
-    collectionRef,
-    where("playerId" as string, "==", userId)
-  );
   try {
-    const querySnapshot = await getDocs(q);
-    let filteredDocs: any;
+    const querySnapshot = await getDocs(collectionRef);
+    let filteredDocs: any[] = [];
     querySnapshot.forEach((doc) => {
-      filteredDocs = { ...doc.data() };
+      filteredDocs.push({ ...doc.data() });
     });
     return filteredDocs;
   } catch (error) {
