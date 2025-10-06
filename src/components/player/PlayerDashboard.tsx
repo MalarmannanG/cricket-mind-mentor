@@ -18,10 +18,10 @@ interface PlayerDashboardProps {
 
 export function PlayerDashboard() {
   const { setLoading, user } = useAuth();
-  const [player, setPlayer] = useLocalStorage<Player>('currentUser', null);
+  const [player, setPlayer] = useState<Player>(null);
   const [completedCount, setCompletedCount] = useState(0);
   const [actionPlan, setActionPlan] = useState<ActionPlanItem[]>([]);
-  const [totalCount, setTotalCount] = useState(0);
+  const [totalCount, setTotalCount] = useState(4);
   const [dailyCompletion, setDailyCompletion] = useState<DailyCompletion>(null);
   const [completionPercentage, setCompletionPercentage] = useState(0);
 
@@ -32,13 +32,12 @@ export function PlayerDashboard() {
       if (qs.length > 0) {
         const today = new Date().toISOString().split('T')[0];
         const todayCompletion = qs.find(
-          dc => dc.playerId === player.id && dc.date.toDate().toISOString().split('T')[0] == today
+          dc => dc.playerId === user.id && dc.date == today
         );
         setDailyCompletion(todayCompletion ? todayCompletion : null);
         const completedCount = todayCompletion ? todayCompletion.items.filter(i => i.completed).length : 0;
         setCompletedCount(completedCount);
-        const totalCount = todayCompletion ? todayCompletion.items.length : 0;
-        setTotalCount(totalCount);
+        
         setCompletionPercentage((completedCount / totalCount) * 100);
       }
     }
@@ -85,7 +84,7 @@ export function PlayerDashboard() {
               <Progress value={completionPercentage} className="h-3" />
             </div>
 
-            {player.results && (
+            {player && player.results && (
               <div className="p-4 rounded-lg bg-primary/5 border border-primary/20">
                 <h4 className="font-semibold mb-2">Your Latest Score</h4>
                 <p className="text-3xl font-bold text-primary">

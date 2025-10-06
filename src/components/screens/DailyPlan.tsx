@@ -5,8 +5,11 @@ import { Badge } from "@/components/ui/badge";
 import { Camera, Play, Pause, RotateCcw, Palette } from "lucide-react";
 import { toast } from "sonner";
 import Breathing from "./Breathing";
+import { createDailyCompletion, getDailyCompletionByPlayer, updateDailyCompletion } from "@/api/dailyCompletion";
+import { useAuth } from "@/contexts/AuthContext";
 
 export const DailyPlan = () => {
+  const { user } = useAuth();
   const [breathingTime, setBreathingTime] = useState(180); // 3 minutes in seconds
   const [visualizationTime, setVisualizationTime] = useState(300); // 5 minutes in seconds
   const [breathingActive, setBreathingActive] = useState(false);
@@ -17,62 +20,7 @@ export const DailyPlan = () => {
 
   const colors = ["#22c55e", "#3b82f6", "#ef4444", "#f59e0b", "#8b5cf6", "#06b6d4"];
 
-  useEffect(() => {
-    let interval: NodeJS.Timeout;
-
-    if (breathingActive && breathingTime > 0) {
-      interval = setInterval(() => {
-        setBreathingTime(time => {
-          if (time <= 1) {
-            setBreathingActive(false);
-            toast.success("Breathing exercise completed!");
-            return 180; // Reset to 3 minutes
-          }
-          return time - 1;
-        });
-      }, 1000);
-    }
-
-    return () => clearInterval(interval);
-  }, [breathingActive, breathingTime]);
-
-  useEffect(() => {
-    let interval: NodeJS.Timeout;
-
-    if (visualizationActive && visualizationTime > 0) {
-      interval = setInterval(() => {
-        setVisualizationTime(time => {
-          if (time <= 1) {
-            setVisualizationActive(false);
-            toast.success("Visualization exercise completed!");
-            return 300; // Reset to 5 minutes
-          }
-          return time - 1;
-        });
-      }, 1000);
-    }
-
-    return () => clearInterval(interval);
-  }, [visualizationActive, visualizationTime]);
-
-  // Canvas drawing functionality
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    // Set canvas size
-    canvas.width = canvas.offsetWidth;
-    canvas.height = canvas.offsetHeight;
-
-    // Initial setup
-    ctx.lineCap = 'round';
-    ctx.lineJoin = 'round';
-    ctx.lineWidth = 3;
-    ctx.strokeStyle = currentColor;
-  }, [currentColor]);
+  
 
   const startDrawing = (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
     setIsDrawing(true);
@@ -145,10 +93,7 @@ export const DailyPlan = () => {
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const onCompletedCanvas = () => {
-    toast.success("Great! You've completed your handwriting exercise for today.");
-    clearCanvas();
-  }
+
 
   const toggleVisualization = () => {
     setVisualizationActive(!visualizationActive);
@@ -161,7 +106,115 @@ export const DailyPlan = () => {
     setVisualizationActive(false);
     setVisualizationTime(300);
   };
+  
+const onDailyPlanComplete = async (itemId: string) => {
+    const qs: any[] = await getDailyCompletionByPlayer(user.id);
+    if (qs.length > 0) {
+      const today = new Date().toISOString().split('T')[0];
+      const todayCompletion = qs.find(
+        dc => dc.playerId === user.id && dc.date == today
+      );
+      if (todayCompletion) {
+        todayCompletion.items = todayCompletion.items.map(i => {
+          if (i.itemId == itemId) {
+            return { ...i, completed: true };
+          }
+          else return i;
+        })
+      }
+      console.log("Updating daily completion:", todayCompletion);
+      await updateDailyCompletion(todayCompletion.id,todayCompletion);
+    }
+    else {
+      const plans = ["affirmation", "camera", "breathing", "visualization"];
+      const items = [];
+      plans.forEach(p => {
+        if (p == itemId)
+          items.push({ itemId: p, completed: true });
+        else
+          items.push({ itemId: p, completed: false });
+      });
+      await createDailyCompletion({
+        playerId: user.id,
+        date: new Date().toISOString().split('T')[0],
+        items: items
+      });
+    }
+  }
+  
+  const onCompletedCanvas = async () => {
+    if (user) {
+      onDailyPlanComplete("affirmation");
+      toast.success("Great! You've completed your handwriting exercise for today.");
+      clearCanvas();
+    }
+  }
+  const onCompletedCamera = () => {
+    onDailyPlanComplete("camera");
+    toast.success("Great! You've completed your camera exercise for today.");
 
+  }
+  const onBreathingComplete = () => {
+    onDailyPlanComplete("breathing");
+    toast.success("Great! You've completed your camera exercise for today.");
+
+  }
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (visualizationActive && visualizationTime > 0) {
+      interval = setInterval(async () => {
+        setVisualizationTime(time => {
+          if (time <= 1) {
+            setVisualizationActive(false);
+            onDailyPlanComplete("visualization").then(() => {
+              toast.success("Visualization exercise completed!");
+              return 300; // Reset to 5 minutes
+            });
+          }
+          return time - 1;
+        });
+      }, 1000);
+    }
+
+    return () => clearInterval(interval);
+  }, [visualizationActive, visualizationTime]);
+useEffect(() => {
+    let interval: NodeJS.Timeout;
+
+    if (breathingActive && breathingTime > 0) {
+      interval = setInterval(() => {
+        setBreathingTime(time => {
+          if (time <= 1) {
+            setBreathingActive(false);
+            toast.success("Breathing exercise completed!");
+            return 180; // Reset to 3 minutes
+          }
+          return time - 1;
+        });
+      }, 1000);
+    }
+
+    return () => clearInterval(interval);
+  }, [breathingActive, breathingTime]);
+  
+  // Canvas drawing functionality
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    // Set canvas size
+    canvas.width = canvas.offsetWidth;
+    canvas.height = canvas.offsetHeight;
+
+    // Initial setup
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    ctx.lineWidth = 3;
+    ctx.strokeStyle = currentColor;
+  }, [currentColor]);
   return (
     <div className="pb-20 p-4 space-y-6 min-h-screen bg-gradient-to-br from-background to-muted/30">
       {/* Header */}
@@ -251,7 +304,7 @@ export const DailyPlan = () => {
               Open Camera
             </Button>
             <Button
-              onClick={onCompletedCanvas}
+              onClick={onCompletedCamera}
               variant="default"
               size="icon" className="w-1/2">
               Complete
@@ -269,35 +322,7 @@ export const DailyPlan = () => {
           </p>
         </CardHeader>
         <CardContent className="space-y-4">
-          <Breathing />
-          {/* <div className="text-center">
-            <div className="text-4xl font-bold text-success mb-2">
-              {formatTime(breathingTime)}
-            </div>
-            <Badge 
-              variant={breathingActive ? "default" : "secondary"}
-              className={breathingActive ? "animate-pulse-success" : ""}
-            >
-              {breathingActive ? "Active" : "Ready"}
-            </Badge>
-          </div>
-          
-          <div className="flex gap-2">
-            <Button 
-              onClick={toggleBreathing}
-              className={`flex-1 ${breathingActive ? "bg-destructive hover:bg-destructive/90" : "bg-success hover:bg-success/90"}`}
-            >
-              {breathingActive ? <Pause size={16} className="mr-2" /> : <Play size={16} className="mr-2" />}
-              {breathingActive ? "Pause" : "Start"}
-            </Button>
-            <Button 
-              onClick={resetBreathing}
-              variant="outline"
-              size="icon"
-            >
-              <RotateCcw size={16} />
-            </Button>
-          </div> */}
+          <Breathing onComplete={onBreathingComplete} />
         </CardContent>
       </Card>
 

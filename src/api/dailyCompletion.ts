@@ -20,7 +20,10 @@ import {
 export async function createDailyCompletion(data) {
     return await addDoc(collection(db, "DailyCompletion"), { ...data, createdAt: serverTimestamp() });
 }
-
+export async function updateDailyCompletion(id, data) {
+  await updateDoc(doc(db, "DailyCompletion", id), data);
+  return true;
+}
 export async function getDailyCompletionByPlayer(userId) {
     const today = new Date().toISOString().split('T')[0];
   const collectionRef = collection(db, "DailyCompletion");
@@ -34,7 +37,7 @@ export async function getDailyCompletionByPlayer(userId) {
     const querySnapshot = await getDocs(q);
     let filteredDocs: any[] = [];
     querySnapshot.forEach((doc) => {
-      filteredDocs.push({ ...doc.data() });
+      filteredDocs.push({ id : doc.id, ...doc.data() });
     });
     return filteredDocs;
   } catch (error) {

@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 
-export default function Breathing() {
+export default function Breathing({onComplete}: {onComplete?: () => void}) {
   // Refs for DOM elements
   const circleRef = useRef(null);
 
@@ -130,6 +130,7 @@ export default function Breathing() {
     playTone(1100, 0.35, 'triangle');
     speak('Session complete. Well done.');
     resetSession();
+    onComplete();
   }
 
   function nextPhase(incrementElapsed1 = 0) {
