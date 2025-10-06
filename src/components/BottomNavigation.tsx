@@ -1,5 +1,7 @@
 import { BarChart3, ClipboardList, Target, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/contexts/AuthContext";
+import { useEffect } from "react";
 
 interface BottomNavigationProps {
   activeTab: string;
@@ -14,7 +16,12 @@ const navItems = [
 ];
 
 export const BottomNavigation = ({ activeTab, onTabChange }: BottomNavigationProps) => {
-  
+  const{ user } = useAuth();
+  useEffect(() => {
+    if(user?.role === 'coach' && !navItems.find(item => item.id === "signup")){
+     navItems.push({    id: "signup", label: "SignUp", icon: Users });
+    }  
+  }, [user]);
   return (
     <div className="fixed bottom-0 left-0 right-0 bg-card border-t border-border shadow-elevated">
       <div className="flex items-center justify-around h-16 max-w-md mx-auto">

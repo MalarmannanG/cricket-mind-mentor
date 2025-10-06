@@ -25,8 +25,7 @@ const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
-  //const auth = useAuth();
-  const [error, setError] = useState('');
+
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -53,7 +52,7 @@ const Login = () => {
         role: "player",
         teamId: "T001"
       }
-      createUser(data).then(async (res:any) => {
+      createUser(data).then(async (res: any) => {
         if (res) {
           toast({
             title: "Account created",
@@ -67,17 +66,17 @@ const Login = () => {
           setIsLoading(false);
           setIsLoading(false);
         }
-        else{
+        else {
           if (inputRef.current) {
-          inputRef.current.value = 'login';
-        }
-        initialRender();
-        toast({
-          title: "Signup failed",
-          description: "User already exists",
-          variant: "destructive",
-        });
-        setIsLoading(false);
+            inputRef.current.value = 'login';
+          }
+          initialRender();
+          toast({
+            title: "Signup failed",
+            description: "User already exists",
+            variant: "destructive",
+          });
+          setIsLoading(false);
         }
       }).catch((err) => {
         if (inputRef.current) {
@@ -111,7 +110,6 @@ const Login = () => {
           <h2 className="text-2xl font-bold text-foreground">Cricket Coach zdczd</h2>
           <p className="text-muted-foreground">Mental Ability Training Platform</p>
         </div>
-
         <Card className="shadow-xl border-cricket-primary/20">
           <CardHeader className="space-y-1">
             <CardTitle className="text-2xl text-center">Welcome</CardTitle>
@@ -121,7 +119,38 @@ const Login = () => {
 
           </CardHeader>
           <CardContent>
-            <Tabs defaultValue="login" className="w-full" ref={inputRef} >
+            <form onSubmit={handleLogin} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="login-email">Email</Label>
+                <Input
+                  id="login-email"
+                  type="email"
+                  placeholder="coach@cricket.com"
+                  value={loginEmail}
+                  onChange={(e) => setLoginEmail(e.target.value)}
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="login-password">Password</Label>
+                <Input
+                  id="login-password"
+                  type="password"
+                  value={loginPassword}
+                  onChange={(e) => setLoginPassword(e.target.value)}
+                  required
+                />
+              </div>
+
+              <Button
+                type="submit"
+                className="w-full"
+                disabled={isLoading}
+              >
+                {isLoading ? "Signing in..." : "Sign In"}
+              </Button>
+            </form>
+            {/* <Tabs defaultValue="login" className="w-full" ref={inputRef} >
               <TabsList className="grid w-full grid-cols-2 mb-6">
                 <TabsTrigger value="login">Login</TabsTrigger>
                 <TabsTrigger value="signup">Sign Up</TabsTrigger>
@@ -214,9 +243,7 @@ const Login = () => {
                   </Button>
                 </form>
               </TabsContent>
-            </Tabs>
-
-
+            </Tabs> */}
           </CardContent>
         </Card>
       </div>

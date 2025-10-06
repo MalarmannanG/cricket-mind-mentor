@@ -14,7 +14,8 @@ import {
   writeBatch
 } from "firebase/firestore";
 import { getAllQuestions } from "./questions";
-import { PerQuestionEvaluation } from "@/components/assessment/AssessmentTest";
+import { PerQuestionEvaluation } from "@/types";
+ 
 
 /**
  * answers input shape:

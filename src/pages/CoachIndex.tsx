@@ -11,6 +11,7 @@ import { FileText, LogOut } from "lucide-react";
 import { CoachDashboard } from "@/components/coach/CoachDashboard";
 import { AssessmentManager } from "@/components/coach/AssessmentManager";
 import { useAuth } from "@/contexts/AuthContext";
+import SignUp from "./SignUp";
  
  
 
@@ -40,6 +41,8 @@ const CoachIndex = () => {
         return <AssessmentManager />;
       case "daily":
         return <DailyPlan />;
+        case "signup":
+        return <SignUp />;
       default:
              return <CoachDashboard onTabChange={onPlayerSelect}/>;
     }

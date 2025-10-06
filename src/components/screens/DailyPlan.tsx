@@ -14,12 +14,12 @@ export const DailyPlan = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isDrawing, setIsDrawing] = useState(false);
   const [currentColor, setCurrentColor] = useState("#22c55e");
-  
+
   const colors = ["#22c55e", "#3b82f6", "#ef4444", "#f59e0b", "#8b5cf6", "#06b6d4"];
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
-    
+
     if (breathingActive && breathingTime > 0) {
       interval = setInterval(() => {
         setBreathingTime(time => {
@@ -32,13 +32,13 @@ export const DailyPlan = () => {
         });
       }, 1000);
     }
-    
+
     return () => clearInterval(interval);
   }, [breathingActive, breathingTime]);
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
-    
+
     if (visualizationActive && visualizationTime > 0) {
       interval = setInterval(() => {
         setVisualizationTime(time => {
@@ -51,7 +51,7 @@ export const DailyPlan = () => {
         });
       }, 1000);
     }
-    
+
     return () => clearInterval(interval);
   }, [visualizationActive, visualizationTime]);
 
@@ -101,7 +101,7 @@ export const DailyPlan = () => {
 
   const draw = (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
     if (!isDrawing) return;
-    
+
     const canvas = canvasRef.current;
     if (!canvas) return;
 
@@ -132,10 +132,10 @@ export const DailyPlan = () => {
   const clearCanvas = () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    
+
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
-    
+
     ctx.clearRect(0, 0, canvas.width, canvas.height);
   };
 
@@ -145,17 +145,10 @@ export const DailyPlan = () => {
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const toggleBreathing = () => {
-    setBreathingActive(!breathingActive);
-    if (!breathingActive) {
-      toast.info("Starting breathing exercise. Breathe deeply and slowly.");
-    }
-  };
-
-  const resetBreathing = () => {
-    setBreathingActive(false);
-    setBreathingTime(180);
-  };
+  const onCompletedCanvas = () => {
+    toast.success("Great! You've completed your handwriting exercise for today.");
+    clearCanvas();
+  }
 
   const toggleVisualization = () => {
     setVisualizationActive(!visualizationActive);
@@ -197,9 +190,8 @@ export const DailyPlan = () => {
               <button
                 key={color}
                 onClick={() => setCurrentColor(color)}
-                className={`w-8 h-8 rounded-full border-2 transition-all ${
-                  currentColor === color ? "border-foreground scale-110" : "border-border"
-                }`}
+                className={`w-8 h-8 rounded-full border-2 transition-all ${currentColor === color ? "border-foreground scale-110" : "border-border"
+                  }`}
                 style={{ backgroundColor: color }}
               />
             ))}
@@ -219,14 +211,21 @@ export const DailyPlan = () => {
               onTouchEnd={stopDrawing}
             />
           </div>
-
-          <Button 
-            onClick={clearCanvas}
-            variant="outline" 
-            className="w-full"
-          >
-            Clear Canvas
-          </Button>
+          <div className="flex gap-4">
+            <Button
+              onClick={clearCanvas}
+              variant="secondary"
+              className="w-1/2"
+            >
+              Clear Canvas
+            </Button>
+            <Button
+              onClick={onCompletedCanvas}
+              variant="default"
+              size="icon" className="w-1/2">
+              Complete
+            </Button>
+          </div>
         </CardContent>
       </Card>
 
@@ -242,13 +241,22 @@ export const DailyPlan = () => {
           </p>
         </CardHeader>
         <CardContent>
-          <Button 
-            className="w-full bg-gradient-sky hover:opacity-90 transition-all"
-            onClick={() => toast.info("Camera feature would open native camera in mobile app")}
-          >
-            <Camera size={16} className="mr-2" />
-            Open Camera
-          </Button>
+          <div className="flex gap-4">
+            <Button
+              variant="outline"
+              className="w-1/2 bg-gradient-sky hover:opacity-90 transition-all"
+              onClick={() => toast.info("Camera feature would open native camera in mobile app")}
+            >
+              <Camera size={16} className="mr-2" />
+              Open Camera
+            </Button>
+            <Button
+              onClick={onCompletedCanvas}
+              variant="default"
+              size="icon" className="w-1/2">
+              Complete
+            </Button>
+          </div>
         </CardContent>
       </Card>
 
@@ -306,23 +314,23 @@ export const DailyPlan = () => {
             <div className="text-4xl font-bold text-primary mb-2">
               {formatTime(visualizationTime)}
             </div>
-            <Badge 
+            <Badge
               variant={visualizationActive ? "default" : "secondary"}
               className={visualizationActive ? "animate-pulse-success" : ""}
             >
               {visualizationActive ? "Active" : "Ready"}
             </Badge>
           </div>
-          
+
           <div className="flex gap-2">
-            <Button 
+            <Button
               onClick={toggleVisualization}
               className={`flex-1 ${visualizationActive ? "bg-destructive hover:bg-destructive/90" : "bg-primary hover:bg-primary/90"}`}
             >
               {visualizationActive ? <Pause size={16} className="mr-2" /> : <Play size={16} className="mr-2" />}
               {visualizationActive ? "Pause" : "Start"}
             </Button>
-            <Button 
+            <Button
               onClick={resetVisualization}
               variant="outline"
               size="icon"

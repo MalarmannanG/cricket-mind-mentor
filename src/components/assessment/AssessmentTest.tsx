@@ -107,7 +107,7 @@ export function AssessmentTest() {
       try {
         const qs: Assessments[] = await getAllQuestions();
         // Sort questions by 'order' field
-        qs.sort((a, b) => a.order - b.order);
+        //qs.sort((a, b) => a.order - b.order);
         setQuestions(qs);
       } catch (err) {
         console.error("Error fetching questions:", err);

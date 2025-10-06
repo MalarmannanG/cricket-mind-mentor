@@ -68,7 +68,7 @@ export function PlayerDashboard() {
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle>Welcome back, {player.name}!</CardTitle>
+          <CardTitle>Welcome back, {user.name}!</CardTitle>
           <p className="text-sm text-muted-foreground">
             Track your daily mental training progress
           </p>
