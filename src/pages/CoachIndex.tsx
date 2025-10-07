@@ -59,12 +59,7 @@ const CoachIndex = () => {
       {/* Top Bar with Export and Logout */}
       
       <div className="fixed top-4 right-4 z-50 flex gap-2">
-        <ExportReport>
-          <Button variant="outline" size="sm" className="shadow-card bg-card">
-            <FileText size={16} className="mr-2" />
-            Export
-          </Button>
-        </ExportReport>
+        
         <Button variant="outline" size="sm" className="shadow-card bg-card" onClick={handleLogout}>
           <LogOut size={16} className="mr-2" />
           Logout

@@ -4,11 +4,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Save, Star, AlertCircle } from "lucide-react";
+import { Save, Star, AlertCircle, FileText } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { getUserAll } from "@/api/users";
 import { listResultsByPlayer } from "@/api/results";
+import { ExportReport } from "../ExportReport";
 
 interface IPlayers {
   name: string;
@@ -92,15 +93,26 @@ export const PlayerReports = ({ playerId }) => {
   return (
     <div className="pb-20 p-4 space-y-6 min-h-screen bg-gradient-to-br from-background to-muted/30">
       {/* Header */}
-      <div className="text-center py-6">
-        <h1 className="text-3xl font-bold bg-gradient-field bg-clip-text text-transparent">
-          Player Reports
-        </h1>
-        <p className="text-muted-foreground mt-2">Individual Performance Analysis</p>
-      </div>
+
 
       {/* Player Selection */}
-      { user.role == "coach" && <Card className="shadow-card">
+      {user.role == "coach" && <Card className="shadow-card">
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div className="text-center py-6">
+              <h1 className="text-3xl font-bold bg-gradient-field bg-clip-text text-transparent">
+                Player Reports
+              </h1>
+              <p className="text-muted-foreground mt-2 ml-4">Individual Performance Analysis</p>
+            </div>
+            <ExportReport>
+              <Button variant="outline" size="sm" className="shadow-card bg-card">
+                <FileText size={16} className="mr-2" />
+                Export
+              </Button>
+            </ExportReport>
+          </div>
+        </CardHeader>
         <CardHeader>
           <CardTitle>Select Player</CardTitle>
         </CardHeader>

@@ -99,7 +99,7 @@ export function AssessmentManager() {
 
 
   return (
-    <div className="space-y-6">
+    <div className="pb-20 p-4 space-y-6 min-h-screen bg-gradient-to-br from-background to-muted/30">
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
@@ -248,11 +248,10 @@ export function AssessmentManager() {
                       </div>
                       <div className="space-y-1">
                         {question.options.map((option, optIndex) => (
-                          <>
+                          <div key={optIndex} style={{boxShadow: '0 3px 3px -2px rgba(0, 0, 0, 0.1)', padding:'10px 0px 10px 0px'}}>
                             <div key={optIndex} className="text-sm text-muted-foreground pl-">
                               <span className='font-medium'>{String.fromCharCode(65 + optIndex)}</span>. {option.text}
                             </div>
-
                             <div className="text-sm text-muted-foreground pl-" style={{justifyContent: 'space-between', display: 'flex', paddingRight:'1rem'}}>
                               <span className="text-muted-foreground">
                                 <span className='font-medium'>Category</span>: <span className="text-sm text-muted-foreground">{option.logic}</span>
@@ -262,7 +261,8 @@ export function AssessmentManager() {
                                   {option.mark > 0 ? '+' : ''}{option.mark}
                                 </span>
                               </span>
-                            </div></>
+                            </div>
+                            </div>
                         ))}
                       </div>
 

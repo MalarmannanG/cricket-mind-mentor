@@ -62,7 +62,7 @@ export function CoachDashboard({ onTabChange }: CoachDashboardProps) {
     }
   }, []);
   return (
-    <div className="space-y-6">
+    <div className="pb-20 p-4 space-y-6 min-h-screen bg-gradient-to-br from-background to-muted/30">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
           title="Team Average"

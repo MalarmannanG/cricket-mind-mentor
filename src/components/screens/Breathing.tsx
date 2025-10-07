@@ -286,7 +286,7 @@ export default function Breathing({onComplete}: {onComplete?: () => void}) {
     </div>
 
     {/* Controls */}
-    <div className="flex flex-col gap-4 flex-1 min-w-[260px]">
+    <div className="flex flex-col gap-4 flex-1">
       {/* Buttons */}
       <div role="toolbar" aria-label="session controls" className="flex gap-2 flex-wrap">
         <button
@@ -330,16 +330,17 @@ export default function Breathing({onComplete}: {onComplete?: () => void}) {
         {/* Session length + voice toggle */}
         <div className="flex justify-between items-center">
           <div>
-            <label className="text-slate-600 text-xs">Session length (minutes)</label>
-            <input
+            <label className="text-slate-600 text-xs">Session length {durationMinutes} (minutes)</label>
+            {/* <input
               type="number"
               min="0.5"
               max="60"
               step="0.5"
+              disabled={true}
               value={durationMinutes}
               onChange={(e) => setDurationMinutes(parseInt(e.target.value))}
               className="mt-1 w-20 px-2 py-1 rounded-md border border-slate-300 bg-white text-slate-800 text-sm focus:ring-1 focus:ring-blue-400"
-            />
+            /> */}
           </div>
 
           <div className="flex flex-col items-end">

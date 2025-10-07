@@ -64,7 +64,7 @@ export function PlayerDashboard() {
 
 
   return (
-    <div className="space-y-6">
+    <div className="pb-20 p-4 space-y-6 min-h-screen bg-gradient-to-br from-background to-muted/30">
       <Card>
         <CardHeader>
           <CardTitle>Welcome back, {user.name}!</CardTitle>
