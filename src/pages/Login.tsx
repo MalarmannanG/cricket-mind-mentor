@@ -32,7 +32,7 @@ const Login = () => {
     setIsLoading(true);
     if (loginEmail && loginPassword) {
       setIsLoading(true);
-      await loginAction({ username: loginEmail, password: loginPassword });
+      await loginAction({ username: loginEmail.toLowerCase(), password: loginPassword });
       setIsLoading(false);
     }
   }

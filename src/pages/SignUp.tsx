@@ -23,7 +23,7 @@ const SignUp = () => {
     // Mock signup validation
     if (signupEmail && signupPassword && signupName && phoneNumber) {
       const data = {
-        email: signupEmail,
+        email: signupEmail?.toLowerCase(),
         name: signupName,
         password: signupPassword,
         phone: phoneNumber,
