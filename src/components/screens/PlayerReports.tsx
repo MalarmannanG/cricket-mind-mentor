@@ -38,8 +38,8 @@ export const PlayerReports = ({ playerId }) => {
           const latest = qs[0]
           latest.perQuestion.filter(a => a.mark > 0)
           setPlayerData({
-            strengths: latest.perQuestion.filter(a => a.mark > 0).map(a => a.logic) || [],
-            blockers: latest.perQuestion.filter(a => a.mark < -1).map(a => a.logic) || [],
+            strengths: latest.perQuestion.filter(a => a.mark > 0).map(a => a.logic).slice(0, 4) || [],
+            blockers: latest.perQuestion.filter(a => a.mark < 0).map(a => a.logic).slice(0, 4) || [],
             actionPlan: latest.actionPlan || []
           });
 
