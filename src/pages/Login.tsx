@@ -107,7 +107,7 @@ const Login = () => {
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-cricket-primary mb-2">🏏</h1>
-          <h2 className="text-2xl font-bold text-foreground">Cricket Coach zdczd</h2>
+          <h2 className="text-2xl font-bold text-foreground">Cricket Coach</h2>
           <p className="text-muted-foreground">Mental Ability Training Platform</p>
         </div>
         <Card className="shadow-xl border-cricket-primary/20">
@@ -116,16 +116,15 @@ const Login = () => {
             <CardDescription className="text-center">
               Sign in to your account or create a new one
             </CardDescription>
-
           </CardHeader>
           <CardContent>
             <form onSubmit={handleLogin} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="login-email">Email</Label>
+                <Label htmlFor="login-email">User Name</Label>
                 <Input
                   id="login-email"
-                  type="email"
-                  placeholder="coach@cricket.com"
+                  type="text"
+                  placeholder="coach"
                   value={loginEmail}
                   onChange={(e) => setLoginEmail(e.target.value)}
                   required

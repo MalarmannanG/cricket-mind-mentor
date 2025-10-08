@@ -28,7 +28,8 @@ export function PlayerDashboard() {
   useEffect(() => {
     console.info('user from local storage:', user);
     async function fetchDailyCompletionByPlayer() {
-      const qs: any[] = await getDailyCompletionByPlayer(user.id);
+      const today = new Date().toISOString().split('T')[0];
+      const qs: any[] = await getDailyCompletionByPlayer(user.id,today);
       if (qs.length > 0) {
         const today = new Date().toISOString().split('T')[0];
         const todayCompletion = qs.find(

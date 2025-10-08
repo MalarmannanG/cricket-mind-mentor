@@ -20,7 +20,7 @@ export const DailyPlan = () => {
 
   const colors = ["#22c55e", "#3b82f6", "#ef4444", "#f59e0b", "#8b5cf6", "#06b6d4"];
 
-  
+
 
   const startDrawing = (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
     setIsDrawing(true);
@@ -106,42 +106,42 @@ export const DailyPlan = () => {
     setVisualizationActive(false);
     setVisualizationTime(300);
   };
-  
-const onDailyPlanComplete = async (itemId: string) => {
-    const qs: any[] = await getDailyCompletionByPlayer(user.id);
+  const addNewDailyCompletion = async (itemId: string) => {
+    const plans = ["affirmation", "camera", "breathing", "visualization"];
+    const items = [];
+    plans.forEach(p => {
+      if (p == itemId)
+        items.push({ itemId: p, completed: true });
+      else
+        items.push({ itemId: p, completed: false });
+    });
+    await createDailyCompletion({
+      playerId: user.id,
+      date: new Date().toISOString().split('T')[0],
+      items: items
+    });
+  }
+
+  const onDailyPlanComplete = async (itemId: string) => {
+    const today = new Date().toISOString().split('T')[0];
+    const qs: any[] = await getDailyCompletionByPlayer(user.id, today);
     if (qs.length > 0) {
-      const today = new Date().toISOString().split('T')[0];
-      const todayCompletion = qs.find(
-        dc => dc.playerId === user.id && dc.date == today
-      );
-      if (todayCompletion) {
-        todayCompletion.items = todayCompletion.items.map(i => {
-          if (i.itemId == itemId) {
-            return { ...i, completed: true };
-          }
-          else return i;
-        })
-      }
+      const todayCompletion = qs[0]
+      todayCompletion.items = todayCompletion.items.map(i => {
+        if (i.itemId == itemId) {
+          return { ...i, completed: true };
+        }
+        else return i;
+      });
       console.log("Updating daily completion:", todayCompletion);
-      await updateDailyCompletion(todayCompletion.id,todayCompletion);
+      await updateDailyCompletion(todayCompletion.id, todayCompletion);
+
     }
     else {
-      const plans = ["affirmation", "camera", "breathing", "visualization"];
-      const items = [];
-      plans.forEach(p => {
-        if (p == itemId)
-          items.push({ itemId: p, completed: true });
-        else
-          items.push({ itemId: p, completed: false });
-      });
-      await createDailyCompletion({
-        playerId: user.id,
-        date: new Date().toISOString().split('T')[0],
-        items: items
-      });
+      addNewDailyCompletion(itemId);
     }
   }
-  
+
   const onCompletedCanvas = async () => {
     if (user) {
       onDailyPlanComplete("affirmation");
@@ -178,7 +178,7 @@ const onDailyPlanComplete = async (itemId: string) => {
 
     return () => clearInterval(interval);
   }, [visualizationActive, visualizationTime]);
-useEffect(() => {
+  useEffect(() => {
     let interval: NodeJS.Timeout;
 
     if (breathingActive && breathingTime > 0) {
@@ -196,7 +196,7 @@ useEffect(() => {
 
     return () => clearInterval(interval);
   }, [breathingActive, breathingTime]);
-  
+
   // Canvas drawing functionality
   useEffect(() => {
     const canvas = canvasRef.current;

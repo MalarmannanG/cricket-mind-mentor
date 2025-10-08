@@ -24,14 +24,13 @@ export async function updateDailyCompletion(id, data) {
   await updateDoc(doc(db, "DailyCompletion", id), data);
   return true;
 }
-export async function getDailyCompletionByPlayer(userId) {
+export async function getDailyCompletionByPlayer(userId, date) {
     const today = new Date().toISOString().split('T')[0];
   const collectionRef = collection(db, "DailyCompletion");
   const q = query(
     collectionRef,
-    where("playerId" as string, "==", userId)
-    // where("date" as string, ">=", today),
-    // where("date" as string, "<=", today)
+    where("playerId" as string, "==", userId),
+    where("date" as string, "==", date),
   );
   try {
     const querySnapshot = await getDocs(q);
