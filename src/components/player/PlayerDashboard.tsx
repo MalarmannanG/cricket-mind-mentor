@@ -1,4 +1,4 @@
-import { Player, DailyCompletion, ActionPlanItem } from '@/types';
+import { Player, DailyCompletion, ActionPlanItem, ActionPlanStatus } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { CheckCircle2, Circle } from 'lucide-react';
@@ -20,16 +20,16 @@ export function PlayerDashboard() {
   const { setLoading, user } = useAuth();
   const [player, setPlayer] = useState<Player>(null);
   const [completedCount, setCompletedCount] = useState(0);
-  const [actionPlan, setActionPlan] = useState<ActionPlanItem[]>([]);
+  const [actionPlan, setActionPlan] = useState<ActionPlanStatus[]>([]);
   const [totalCount, setTotalCount] = useState(4);
   const [dailyCompletion, setDailyCompletion] = useState<DailyCompletion>(null);
   const [completionPercentage, setCompletionPercentage] = useState(0);
 
   useEffect(() => {
     console.info('user from local storage:', user);
-    async function fetchDailyCompletionByPlayer() {
+    async function fetchDailyCompletionByPlayer(res: ActionPlanItem[] | []) {
       const today = new Date().toISOString().split('T')[0];
-      const qs: any[] = await getDailyCompletionByPlayer(user.id,today);
+      const qs: any[] = await getDailyCompletionByPlayer(user.id, today);
       if (qs.length > 0) {
         const today = new Date().toISOString().split('T')[0];
         const todayCompletion = qs.find(
@@ -38,8 +38,20 @@ export function PlayerDashboard() {
         setDailyCompletion(todayCompletion ? todayCompletion : null);
         const completedCount = todayCompletion ? todayCompletion.items.filter(i => i.completed).length : 0;
         setCompletedCount(completedCount);
-        
         setCompletionPercentage((completedCount / totalCount) * 100);
+        const _res = res.map(item => {
+          const isCompleted = todayCompletion?.items.find(i => i.itemId === item.id)?.completed || false;
+          const ActionPlanStatus = { ...item, completed: isCompleted };
+          return ActionPlanStatus;
+        });
+        setActionPlan(_res.sort((a, b) => Number(b.completed) - Number(a.completed)));
+      }
+      else {
+        const _res = res.map(item => {
+          const ActionPlanStatus = { ...item, completed: false };
+          return ActionPlanStatus;
+        });
+        setActionPlan(_res);
       }
     }
     async function fetchTestResult(playerId: string) {
@@ -52,8 +64,8 @@ export function PlayerDashboard() {
       setLoading(true);
       getActionPlanByPlayer().then(async (res: any) => {
         console.log('Fetched action plan:', res);
-        setActionPlan(res ? res : []);
-        await fetchDailyCompletionByPlayer();
+        //setActionPlan(res ? res : []);
+        await fetchDailyCompletionByPlayer(res);
         await fetchTestResult(user.id);
       }).catch(err => {
         console.error('Error fetching action plan:', err);
@@ -68,9 +80,9 @@ export function PlayerDashboard() {
     <div className="pb-20 p-4 space-y-6 min-h-screen bg-gradient-to-br from-background to-muted/30">
       <Card>
         <CardHeader>
-          <CardTitle>Welcome back, {user.name}!</CardTitle>
+          <CardTitle>Welcome to G-training, {user.name}!</CardTitle>
           <p className="text-sm text-muted-foreground">
-            Track your daily mental training progress
+            Track your Mental Performance
           </p>
         </CardHeader>
         <CardContent>
@@ -103,14 +115,12 @@ export function PlayerDashboard() {
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
-            {actionPlan && actionPlan?.map((item) => {
-              const completion = dailyCompletion?.items.find(i => i.itemId === item.id);
-              const isCompleted = completion?.completed || false;
-
+            {actionPlan && actionPlan.map((item) => {
+              const isCompleted = item?.completed || false;
               return (
                 <div
                   key={item.id}
-                  className={`flex items-center gap-3 p-4 rounded-lg border transition-colors ${isCompleted ? 'bg-primary/5 border-primary/20' : 'bg-card'
+                  className={`flex items-center gap-3 p-4 rounded-lg border transition-colors ${isCompleted ? 'bg-primary/5 border-primary/20' : 'border-warning/20 bg-warning/5'
                     }`}
                 >
                   {isCompleted ? (

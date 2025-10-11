@@ -34,7 +34,7 @@ const SignUp = () => {
         if (res) {
           toast({
             title: "Account created",
-            description: "Welcome to Cricket Coach!",
+            description: "Welcome to G-Training!",
           });
 
           setLoading(false);

@@ -32,6 +32,7 @@ export function AssessmentTest() {
   const [showResults, setShowResults] = useState<boolean>(false);
   const [evaluation, setEvaluation] = useState<AssessmentEvaluation | null>(null); // Typed evaluation object or null
   const [saving, setSaving] = useState<boolean>(false);
+  const [assessmentId, setAssessmentId] = useState<string>(null);
 
   const positiveCount: number = evaluation
     ? evaluation.perQuestion.filter(p => p.mark > 0).length
@@ -83,7 +84,7 @@ export function AssessmentTest() {
   async function submitAndSave(answersPayload: AnswersMap): Promise<void> {
     setSaving(true);
     try {
-      const res: { id: string, evaluation: AssessmentEvaluation } = await evaluateAndSaveResult(user.id, answersPayload);
+      const res: { id: string, evaluation: AssessmentEvaluation } = await evaluateAndSaveResult(user.id, answersPayload, assessmentId);
       setEvaluation(res.evaluation ?? null);
       setShowResults(true);
       toast.success("Assessment completed and saved.");
@@ -94,43 +95,43 @@ export function AssessmentTest() {
       setSaving(false);
     }
   }
-  function handleReset(): void {
+  async function handleReset(): Promise<void> {
     setCurrentIndex(0);
     setAnswersMap({});
     setSelectedOptionId(null);
     setShowResults(false);
     setEvaluation(null);
+    await fetchQuestions();
+  }
+  async function fetchQuestions() {
+    setLoading(true);
+    try {
+      const qs: Assessments[] = await getAllQuestions();
+      setQuestions(qs);
+    } catch (err) {
+      console.error("Error fetching questions:", err);
+      toast.error("Error fetching questions");
+    } finally {
+      setLoading(false);
+    }
   }
   useEffect(() => {
-    async function fetchQuestions() {
-      setLoading(true);
-      try {
-        const qs: Assessments[] = await getAllQuestions();
-        // Sort questions by 'order' field
-        //qs.sort((a, b) => a.order - b.order);
-        setQuestions(qs);
-      } catch (err) {
-        console.error("Error fetching questions:", err);
-        toast.error("Error fetching questions");
-      } finally {
-        setLoading(false);
-      }
-    }
     async function fetchTestResult() {
       setLoading(true);
       try {
         const qs: any[] = await listResultsByPlayer(user?.id);
-        if(qs.length > 0){
+        if (qs.length > 0 && qs[0].perQuestion.length > 0) {
           const latest = qs[0];
+          setAssessmentId(latest.id);
           //const perQuestion: PerQuestionEvaluation[] = latest.answer || [];
           setEvaluation(latest);
           setShowResults(true);
-            setTestResult(qs);
+          setTestResult(qs);
         }
-        else{
-            fetchQuestions();
+        else {
+          await fetchQuestions();
         }
-      
+
       } catch (err) {
         console.error("Error fetching questions:", err);
         toast.error("Error fetching questions");
@@ -138,7 +139,7 @@ export function AssessmentTest() {
         setLoading(false);
       }
     }
-  
+
     fetchTestResult();
   }, [user]);
   // Show results screen

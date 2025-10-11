@@ -1,165 +1,254 @@
-import { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { FileText, Download, Trophy, Target, User } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { AssessmentEvaluation, IPlayers } from "@/types";
 
 interface ExportReportProps {
-  children: React.ReactNode;
+  playerResult: AssessmentEvaluation | null;
+  children: React.ReactNode | any;
+  player: IPlayers | null;
 }
 
-export const ExportReport = ({ children }: ExportReportProps) => {
-  const [isOpen, setIsOpen] = useState(false);
-
-  // Mock data for the report
-  const reportData = {
-    teamAverage: 61,
-    bestPlayer: { name: "Arjun", score: 75 },
-    worstPlayer: { name: "Vikram", score: 45 },
-    assessmentDate: new Date().toLocaleDateString(),
-    totalPlayers: 3,
-    recommendations: [
-      "Implement daily breathing exercises for all players",
-      "Focus on confidence building sessions for Vikram", 
-      "Continue positive reinforcement for Arjun",
-      "Team visualization sessions before matches"
-    ]
-  };
-
+export const ExportReport = ({ children, player, playerResult }: ExportReportProps) => {
+debugger;
+  const [playerData, setPlayerData] = useState<{
+    strengths: string[];
+    blockers: string[];
+    coachNotes : string;
+  } | null>({
+    strengths: playerResult?.perQuestion?.filter(a => a.mark > 0).map(a => a.logic).slice(0, 5) || [],
+    blockers: playerResult?.perQuestion?.filter(a => a.mark < 0).map(a => a.logic).slice(0, 5) || [],
+    coachNotes: playerResult?.coachNotes ?? ''
+  });
   const generateReport = () => {
+    let strengths = '';
+    playerData && playerData?.strengths.map((strength, index) => {
+      strengths += `<div key=${index} className="flex items-center gap-2">
+                    <Badge variant="secondary" className="bg-success/20 text-success border-success/30">
+                      ${index + 1}.
+                    </Badge>
+                    <span className="text-sm">${strength}</span>
+                  </div>`;
+    })
+    let blockers = '';
+    playerData && playerData?.blockers.map((blocker, index) => {
+      blockers += `<div key=${index} className="flex items-center gap-2">
+                    <Badge variant="secondary" className="bg-success/20 text-success border-success/30">
+                      ${index + 1}.
+                    </Badge>
+                    <span className="text-sm">${blocker}</span>
+                  </div>`;
+    })
     // Create a styled HTML content for the report
     const reportHTML = `
       <!DOCTYPE html>
-      <html>
-        <head>
-          <title>Cricket Coach Mental Ability Report</title>
-          <style>
-            body { font-family: Arial, sans-serif; margin: 40px; background: #f8fafc; }
-            .header { text-align: center; margin-bottom: 30px; padding: 20px; background: linear-gradient(135deg, #22c55e, #16a34a); color: white; border-radius: 10px; }
-            .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 30px; }
-            .stat-card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); text-align: center; }
-            .player-section { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 20px; }
-            .recommendations { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-            .score { font-size: 24px; font-weight: bold; color: #22c55e; }
-            .date { color: #64748b; font-size: 14px; }
-            .recommendation-item { padding: 10px; margin: 5px 0; background: #f1f5f9; border-radius: 5px; border-left: 4px solid #22c55e; }
-          </style>
-        </head>
-        <body>
-          <div class="header">
-            <h1>Cricket Coach Mental Ability Report</h1>
-            <p class="date">Generated on ${reportData.assessmentDate}</p>
-          </div>
-          
-          <div class="stats-grid">
-            <div class="stat-card">
-              <h3>Team Average</h3>
-              <div class="score">${reportData.teamAverage}%</div>
-            </div>
-            <div class="stat-card">
-              <h3>Best Performer</h3>
-              <div class="score">${reportData.bestPlayer.name}</div>
-              <p>${reportData.bestPlayer.score}%</p>
-            </div>
-            <div class="stat-card">
-              <h3>Total Players</h3>
-              <div class="score">${reportData.totalPlayers}</div>
-            </div>
-          </div>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>G-MainScan Report – ${player?.name}</title>
+  <style>
+    body {
+      font-family: "Segoe UI", Arial, sans-serif;
+      color: #1a1a1a;
+      background-color: #f9fafb;
+      margin: 0;
+      padding: 0;
+      line-height: 1.6;
+    }
 
-          <div class="player-section">
-            <h3>Individual Performance</h3>
-            <p><strong>Rahul:</strong> 63% - Shows good mental resilience with room for improvement in pressure situations.</p>
-            <p><strong>Arjun:</strong> 75% - Excellent performance, natural leader with strong confidence levels.</p>
-            <p><strong>Vikram:</strong> 45% - Requires focused attention and confidence building exercises.</p>
-          </div>
+    .page1 {
+      max-width: 800px;
+      margin: 40px auto;
+      background: #ffffff;
+      padding: 40px 50px;
+      border-radius: 12px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+      page-break-before: always;
+      page-break-after: always;
+    }
 
-          <div class="recommendations">
-            <h3>Recommended Action Plan</h3>
-            ${reportData.recommendations.map(rec => `<div class="recommendation-item">${rec}</div>`).join('')}
-          </div>
+    h1, h2, h3 {
+      color: #0f172a;
+      margin:0px;
+	  padding:0px;
+	  text-align: center;
+    }
 
-          <div style="text-align: center; margin-top: 30px; color: #64748b; font-size: 12px;">
-            Cricket Coach Mental Ability Prototype - Generated by Lovable
-          </div>
-        </body>
-      </html>
+    h1 {
+      font-size: 1.8rem;
+      
+    }
+
+    h2 {
+      color: #2563eb;
+       
+    }
+
+    p {
+      margin-bottom: 12px;
+    }
+
+    b {
+      color: #111827;
+    }
+
+    .quote {
+      font-style: italic;
+      color: #475569;
+      background: #f1f5f9;
+      padding: 12px 16px;
+      border-left: 4px solid #2563eb;
+      border-radius: 6px;
+      margin: 20px 0;
+    }
+
+    ul {
+      margin: 10px 0 20px 20px;
+    }
+
+    li {
+      margin-bottom: 6px;
+    }
+
+    .section-title {
+	color: #2563eb;
+    padding: 8px 0px;
+    border-radius: 6px;
+    font-weight: 900;
+    font-size: 24px;
+    margin: 25px 0 3px;
+    display: inline-block;
+    }
+
+    .highlight {
+      color: #2563eb;
+      font-weight: bold;
+    }
+
+    footer {
+      text-align: center;
+      font-size: 0.9rem;
+      margin-top: 30px;
+      color: #6b7280;
+    }
+
+    @media print {
+      body {
+        background: white;
+      }
+      .page {
+        box-shadow: none;
+        border-radius: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- PAGE 1 -->
+  <div class="page">
+    <h1>G-MainScan</h1>
+	  <h2>G-MainScan Mental Performance Report</h2>
+    <p><b>Name:</b> ${player.name}<br>
+    <b>Date:</b> ${playerResult.createdAt.toDate().toLocaleDateString('en-GB')}</p>
+
+    <div class="quote">
+      “Remember, champions are not born. They are trained, tested, and built — step by step. Keep growing stronger.”
+    </div>
+
+    <p>
+      <span class="section-title">Welcome to Your G-MainScan Report</span><br>
+      This report is designed to help you <b>grow, not to judge you</b>.
+      It highlights your <b>top strengths — your mental superpowers —</b> and gently shows patterns that can be upgraded.
+    </p>
+
+    <p>These are not problems, but opportunities to build focus, patience, and resilience.</p>
+    <p>Every elite athlete has internal patterns. The great ones learn to understand, manage, and rise above them. This is your tool to do that.</p>
+
+    <ul>
+      <li>Keep this report private unless you choose to share it with your coach or mentor.</li>
+      <li>Use the affirmation daily.</li>
+      <li>Follow one small action at a time.</li>
+      <li><b>Remember:</b> You are capable of anything.</li>
+    </ul>
+
+    <p class="section-title">Top ${playerData?.strengths.length > 0 ? playerData?.strengths.length : ''} Strengths</p><br/>
+     ${strengths}
+  </div>
+ 
+  <div class="page">
+     <p class="section-title">Top ${playerData?.blockers.length > 0 ? playerData?.blockers.length : ''} Blockers</p><br/>
+     ${blockers}
+
+    <p class="section-title">Action Plan</p>
+    <p><b>Affirmation Writing:</b><br>
+    “I trust my training. Every mistake makes me stronger, every challenge makes me sharper.”<br>
+    ✍️ Morning: Write it 5 times<br>
+    ✍️ Night: Write it 3 times
+    </p>
+
+    <p><b>Mirror Talk (Affirmation):</b> Stand in front of a mirror, look into your own eyes, and say the affirmation out loud with confidence and a smile.<br>
+    Morning once, Night once — add emotion and belief as if you already own it.</p>
+
+    <p><b>Breathing Routine (3 minutes):</b> Practice <span class="highlight">4-4-4-4 Box Breathing</span> for 3 minutes before pressure moments.<br>
+    Inhale 4s → Hold 4s → Exhale 4s → Hold 4s</p>
+
+    <p><b>Visualization (5 minutes):</b> Spend 5 minutes daily imagining yourself calmly resetting after a mistake, smiling, and executing the next move with energy and focus.</p>
+
+    <p class="section-title">Coach’s Notes</p><br/>
+     ${playerData.coachNotes}
+  </div>
+ 
+  <div class="page">
+    <p class="section-title">Training Drills & Mindset Practices</p>
+    <ul>
+      <li><b>Fear of Failure & Pressure Sensitivity:</b> Penalty shootouts under time pressure + 3-min breathing.</li>
+      <li><b>Self-Doubt & Comparison Trap:</b> Journal 3 personal wins daily.</li>
+      <li><b>Overthinking Mistakes:</b> Add “Reset Drills” (clap + reset + continue).</li>
+      <li><b>Emotional Frustration with Teammates:</b> Pair drills to build patience and trust.</li>
+    </ul>
+
+    <p><b>Personal Motivation & Closing Remark:</b><br>
+      “Maahath, your ability to bounce back and your hunger to grow make you stand out. Believe in your training, trust your instincts, and play with joy. Champions are built one step, one game, one mindset shift at a time.”
+    </p>
+
+    <p class="section-title">Parent & Coach Support</p>
+    <p><b>Parents:</b> Encourage affirmations, breathing, and daily mindset routines.<br>
+    <b>Coaches:</b> Provide pressure drills and teamwork exercises to strengthen confidence and resilience.</p>
+
+    <footer>
+      <p style="text-align:left;"><b>Assessed by:</b> Gnanamani Kannaiyan<br>Performance Mentor</p>
+    </footer>
+  </div>
+
+</body>
+</html>
     `;
-
-    // Open in new window
     const newWindow = window.open('', '_blank');
     if (newWindow) {
       newWindow.document.write(reportHTML);
-      newWindow.document.close();
+      newWindow.print();
     }
+
   };
-
+useEffect(()=>{
+  setPlayerData({
+    strengths: playerResult?.perQuestion?.filter(a => a.mark > 0).map(a => a.logic).slice(0, 5) || [],
+    blockers: playerResult?.perQuestion?.filter(a => a.mark < 0).map(a => a.logic).slice(0, 5) || [],
+    coachNotes: playerResult?.coachNotes ?? ''
+  });
+},[playerResult])
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogTrigger asChild>
-        {children}
-      </DialogTrigger>
-      <DialogContent className="max-w-md">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <FileText size={20} />
-            Export Report
-          </DialogTitle>
-        </DialogHeader>
-        
-        <div className="space-y-4">
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-lg">Report Preview</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Team Average</span>
-                <Badge className="bg-gradient-field">{reportData.teamAverage}%</Badge>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Best Player</span>
-                <div className="flex items-center gap-1">
-                  <Trophy size={14} className="text-warning" />
-                  <span className="text-sm font-medium">{reportData.bestPlayer.name}</span>
-                </div>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Total Players</span>
-                <div className="flex items-center gap-1">
-                  <User size={14} className="text-primary" />
-                  <span className="text-sm font-medium">{reportData.totalPlayers}</span>
-                </div>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Recommendations</span>
-                <div className="flex items-center gap-1">
-                  <Target size={14} className="text-secondary" />
-                  <span className="text-sm font-medium">{reportData.recommendations.length}</span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <div className="flex gap-2">
-            <Button 
-              onClick={generateReport}
-              className="flex-1 bg-gradient-field hover:opacity-90"
-            >
-              <Download size={16} className="mr-2" />
-              Generate Report
-            </Button>
-            <Button 
-              variant="outline" 
-              onClick={() => setIsOpen(false)}
-              className="flex-1"
-            >
-              Cancel
-            </Button>
-          </div>
-        </div>
-      </DialogContent>
-    </Dialog>
+    <div>
+      {React.cloneElement(children, { onClick: generateReport })}
+    </div>
+    // <div className="space-y-4">
+    //   {children}
+    // </div>
   );
 };

@@ -56,7 +56,7 @@ const Login = () => {
         if (res) {
           toast({
             title: "Account created",
-            description: "Welcome to Cricket Coach!",
+            description: "Welcome to G-Training!",
           });
           if (inputRef.current) {
             inputRef.current.value = 'login';
@@ -107,8 +107,8 @@ const Login = () => {
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-cricket-primary mb-2">🏏</h1>
-          <h2 className="text-2xl font-bold text-foreground">Cricket Coach</h2>
-          <p className="text-muted-foreground">Mental Ability Training Platform</p>
+          <h2 className="text-2xl font-bold text-foreground">G-Training</h2>
+          <p className="text-muted-foreground">Mental Performance Training Platform</p>
         </div>
         <Card className="shadow-xl border-cricket-primary/20">
           <CardHeader className="space-y-1">

@@ -25,7 +25,7 @@ export const Dashboard = () => {
       {/* Header */}
       <div className="text-center py-6">
         <h1 className="text-3xl font-bold bg-gradient-field bg-clip-text text-transparent">
-          Cricket Coach Dashboard
+          G-Training Dashboard
         </h1>
         <p className="text-muted-foreground mt-2">Team Mental Performance Overview</p>
       </div>

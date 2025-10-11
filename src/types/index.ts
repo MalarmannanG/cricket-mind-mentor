@@ -50,7 +50,9 @@ export interface ActionPlanItem {
   type: 'affirmation' | 'camera' | 'breathing' | 'visualization';
   duration?: number;
 }
-
+export interface ActionPlanStatus extends ActionPlanItem {
+   completed: boolean;
+}
 export interface DailyCompletion {
   playerId: string;
   date: string;
@@ -78,12 +80,20 @@ export interface PerQuestionEvaluation {
   questionText: string;
 }
 
+export interface IPlayers {
+  name: string;
+  id: string;
+}
+
 /** Overall assessment evaluation result. */
  export interface AssessmentEvaluation {
+  id: string | null;
   rawScore: number;
   maxScore: number;
   percent: number;
   perQuestion: PerQuestionEvaluation[];
+  createdAt : any
+  coachNotes:any;
 }
 export interface QuestionOption {
   id: string; // e.g., 'A', 'B'

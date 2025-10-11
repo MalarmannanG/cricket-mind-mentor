@@ -11,11 +11,12 @@ import {
   where,
   orderBy,
   onSnapshot,
-  writeBatch
+  writeBatch,
+  updateDoc
 } from "firebase/firestore";
 import { getAllQuestions } from "./questions";
 import { PerQuestionEvaluation } from "@/types";
- 
+
 
 /**
  * answers input shape:
@@ -26,14 +27,14 @@ import { PerQuestionEvaluation } from "@/types";
  *  - computes rawScore, maxScore, percent
  *  - returns { rawScore, maxScore, percent, perQuestion: [{ questionId, optionId, mark, logic }] }
  */
-export async function evaluateAnswers( answersMap) {
+export async function evaluateAnswers(answersMap) {
   const questions = await getAllQuestions();
   let raw = 0;
   let max = 0;
   const perQuestion = [];
 
   for (const q of questions) {
-    const qMax = q.options.reduce((m,o) => Math.max(m, o.mark), -Infinity);
+    const qMax = q.options.reduce((m, o) => Math.max(m, o.mark), -Infinity);
     max += qMax > 0 ? qMax : 0; // only positive marks count to max theoretical positive score
     const selectedId = answersMap[q.id] ?? null;
     const opt = q.options.find(o => o.id === selectedId);
@@ -44,14 +45,14 @@ export async function evaluateAnswers( answersMap) {
       optionId: selectedId,
       mark,
       logic: opt ? opt.logic : null,
-      optionText : opt ? opt.text : null,
-      questionText : q.question
+      optionText: opt ? opt.text : null,
+      questionText: q.question
     });
   }
 
   // to avoid division by zero
   const percent = max !== 0 ? Math.round((raw / (max)) * 100) : 0;
-  return { rawScore: raw, maxScore: max, percent, perQuestion };
+  return { rawScore: raw, maxScore: max, percent, perQuestion, id:null };
 }
 
 /**
@@ -61,30 +62,56 @@ export async function evaluateAnswers( answersMap) {
  *
  * returns saved result id and computed payload
  */
-export async function evaluateAndSaveResult( playerId, answersMap) {
+
+export async function updateAssesmentResult(data, assessmentId) {
+   if (assessmentId) {
+    await updateDoc(doc(db, "results", assessmentId), data);
+    return { id: assessmentId, data };
+  }
+}
+export async function addAssesmentResult(data) {
+   const resultRef = await addDoc(collection(db, "results"), data);
+   return { id: resultRef.id, data };
+}
+export async function evaluateAndSaveResult(playerId, answersMap, assessmentId) {
   // compute scoring
   const evaluation = await evaluateAnswers(answersMap);
-  const answer : PerQuestionEvaluation[] = [];
-evaluation.perQuestion.forEach(pq => {
-   answer.push({
+  const answer: PerQuestionEvaluation[] = [];
+  evaluation.perQuestion.forEach(pq => {
+    answer.push({
       optionId: pq.optionId,
       mark: pq.mark,
       logic: pq.logic,
       questionId: pq.questionId,
-      optionText : pq.optionText,
-      questionText : pq.questionText
+      optionText: pq.optionText,
+      questionText: pq.questionText
     });
   });
   // save result doc
-  const resultRef = await addDoc(collection(db, "results"), {
-    playerId,
-    rawScore: evaluation.rawScore,
-    maxScore: evaluation.maxScore,
-    percent: evaluation.percent,
-    createdAt: serverTimestamp(),
-    perQuestion: answer
-  });
+  if (assessmentId) {
+    const data = {
+      playerId,
+      rawScore: evaluation.rawScore,
+      maxScore: evaluation.maxScore,
+      percent: evaluation.percent,
+      createdAt: serverTimestamp(),
+      perQuestion: answer
+    };
+    const resultRef = await updateDoc(doc(db, "results", assessmentId), data);
 
+    return { id: assessmentId, evaluation };
+  }
+  else {
+    const resultRef = await addDoc(collection(db, "results"), {
+      playerId,
+      rawScore: evaluation.rawScore,
+      maxScore: evaluation.maxScore,
+      percent: evaluation.percent,
+      createdAt: serverTimestamp(),
+      perQuestion: answer
+    });
+    return { id: resultRef.id, evaluation };
+  }
   // save answers as subcollection under results/{resultId}/answers/{Q1}
   // const batch = writeBatch(db);
   // evaluation.perQuestion.forEach(pq => {
@@ -102,7 +129,7 @@ evaluation.perQuestion.forEach(pq => {
 
   // await batch.commit();
 
-  return { id: resultRef.id, evaluation };
+
 }
 
 /* ---------- Fetch / subscribe ---------- */

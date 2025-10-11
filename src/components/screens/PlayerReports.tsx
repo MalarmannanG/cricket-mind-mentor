@@ -10,11 +10,10 @@ import { useAuth } from "@/contexts/AuthContext";
 import { getUserAll } from "@/api/users";
 import { listResultsByPlayer } from "@/api/results";
 import { ExportReport } from "../ExportReport";
+import { AssessmentEvaluation,IPlayers } from "@/types";
+import { addAssesmentResult, updateAssesmentResult } from "@/api/assessmentResult";
 
-interface IPlayers {
-  name: string;
-  id: string;
-}
+
 
 
 export const PlayerReports = ({ playerId }) => {
@@ -22,6 +21,7 @@ export const PlayerReports = ({ playerId }) => {
   const { user } = useAuth();
   const [selectedPlayer, setSelectedPlayer] = useState<IPlayers | null>(null);
   const [players, setPlayers] = useState<IPlayers[]>([]);
+  const [playerResult, setPlayerResult] = useState<AssessmentEvaluation | null>(null)
   const [notes, setNotes] = useState<string>("");
   const [playerData, setPlayerData] = useState<{
     strengths: string[];
@@ -29,6 +29,27 @@ export const PlayerReports = ({ playerId }) => {
     actionPlan: string[];
   } | null>(null);
   // Load notes from localStorage
+
+  async function saveNotes(): Promise<void> {
+
+    try {
+      const res = playerResult;
+      if(res != null && res.id){
+      await updateAssesmentResult({ ...res, coachNotes: notes }, res.id);
+      }
+      else{
+        await addAssesmentResult({  coachNotes: notes, playerId: selectedPlayer.id, perQuestion: [] });
+      }
+      localStorage.setItem(`coach-notes-${selectedPlayer}`, notes);
+      toast.success("Notes saved successfully!");
+    } catch (err) {
+      console.error("Error saving result:", err);
+      toast.error("Error saving result");
+    } finally {
+
+    }
+  }
+
   useEffect(() => {
     async function fetchTestResult() {
       setLoading(true);
@@ -36,16 +57,18 @@ export const PlayerReports = ({ playerId }) => {
         const qs: any[] = await listResultsByPlayer(selectedPlayer?.id);
         if (qs.length > 0) {
           const latest = qs[0]
+          setPlayerResult(latest);
+          setNotes(latest.coachNotes || "");
           latest.perQuestion.filter(a => a.mark > 0)
           setPlayerData({
-            strengths: latest.perQuestion.filter(a => a.mark > 0).map(a => a.logic).slice(0, 4) || [],
-            blockers: latest.perQuestion.filter(a => a.mark < 0).map(a => a.logic).slice(0, 4) || [],
+            strengths: latest.perQuestion.filter(a => a.mark > 0).map(a => a.logic).slice(0, 5) || [],
+            blockers: latest.perQuestion.filter(a => a.mark < 0).map(a => a.logic).slice(0, 5) || [],
             actionPlan: latest.actionPlan || []
           });
-
         }
-
-
+        else {
+          setPlayerData({ strengths: [], blockers: [], actionPlan: [] });
+        }
       } catch (err) {
         console.error("Error fetching questions:", err);
         toast.error("Error fetching questions");
@@ -64,7 +87,6 @@ export const PlayerReports = ({ playerId }) => {
       setSelectedPlayer(user ? { name: user.name, id: user.id } : null);
     }
     else {
-
       getUserAll().then(async (res: any[]) => {
         console.log('Fetched users:', res);
         setPlayers(res.map((u: any) => ({ name: u.name, id: u.id })));
@@ -76,12 +98,12 @@ export const PlayerReports = ({ playerId }) => {
       });
     }
   }, []);
-  const saveNotes = () => {
-    if (selectedPlayer && notes.trim()) {
-      localStorage.setItem(`coach-notes-${selectedPlayer}`, notes);
-      toast.success("Notes saved successfully!");
-    }
-  };
+  // const saveNotes = () => {
+  //   if (selectedPlayer && notes.trim()) {
+  //     localStorage.setItem(`coach-notes-${selectedPlayer}`, notes);
+  //     toast.success("Notes saved successfully!");
+  //   }
+  // };
   const onValueChange = (playerId: string) => {
 
     setSelectedPlayer(players?.find(p => p.id === playerId) || null);
@@ -96,16 +118,16 @@ export const PlayerReports = ({ playerId }) => {
 
 
       {/* Player Selection */}
-      {user.role == "coach" && <Card className="shadow-card">
-        <CardHeader>
+      <Card className="shadow-card">
+        <CardHeader className="py-4">
           <div className="flex items-center justify-between">
-            <div className="text-center py-6">
-              <h1 className="text-3xl font-bold bg-gradient-field bg-clip-text text-transparent">
+            <div className="text-center py-4">
+              <h1 className="text-3xl font-bold bg-gradient-field bg-clip-text text-left text-transparent">
                 Player Reports
               </h1>
-              <p className="text-muted-foreground mt-2 ml-4">Individual Performance Analysis</p>
+              <p className="text-muted-foreground mt-2">Individual Performance Analysis</p>
             </div>
-            <ExportReport>
+            <ExportReport player={selectedPlayer} playerResult={playerResult}>
               <Button variant="outline" size="sm" className="shadow-card bg-card">
                 <FileText size={16} className="mr-2" />
                 Export
@@ -113,10 +135,8 @@ export const PlayerReports = ({ playerId }) => {
             </ExportReport>
           </div>
         </CardHeader>
-        <CardHeader>
-          <CardTitle>Select Player</CardTitle>
-        </CardHeader>
-        <CardContent>
+        {user?.role == "coach" && <CardContent>
+          <CardTitle className="py-4">Select Player</CardTitle>
           <Select value={selectedPlayer?.id} onValueChange={onValueChange}>
             <SelectTrigger className="w-full">
               <SelectValue placeholder="Choose a player to view report" />
@@ -129,8 +149,8 @@ export const PlayerReports = ({ playerId }) => {
               ))}
             </SelectContent>
           </Select>
-        </CardContent>
-      </Card>}
+        </CardContent>}
+      </Card>
 
       {/* Player Report Content */}
       {playerData && (
@@ -203,7 +223,7 @@ export const PlayerReports = ({ playerId }) => {
             <CardHeader>
               <CardTitle>Coach Notes</CardTitle>
               <p className="text-sm text-muted-foreground">
-                Private notes for {selectedPlayer.name} (saved locally)
+                Private notes for {selectedPlayer.name}
               </p>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -213,14 +233,14 @@ export const PlayerReports = ({ playerId }) => {
                 onChange={(e) => setNotes(e.target.value)}
                 className="min-h-[120px] resize-none"
               />
-              <Button
+              {user?.role == "coach" && <Button
                 onClick={saveNotes}
                 className="w-full bg-gradient-field hover:opacity-90 transition-all"
                 disabled={!notes.trim()}
               >
                 <Save size={16} className="mr-2" />
                 Save Notes
-              </Button>
+              </Button>}
             </CardContent>
           </Card>
         </>
