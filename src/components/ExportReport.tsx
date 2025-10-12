@@ -14,7 +14,6 @@ interface ExportReportProps {
 }
 
 export const ExportReport = ({ children, player, playerResult }: ExportReportProps) => {
-debugger;
   const [playerData, setPlayerData] = useState<{
     strengths: string[];
     blockers: string[];

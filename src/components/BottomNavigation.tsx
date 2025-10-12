@@ -8,7 +8,7 @@ interface BottomNavigationProps {
   onTabChange: (tab: string) => void;
 }
 
-const navItems = [
+let navItems = [
   { id: "dashboard", label: "Dashboard", icon: BarChart3 },
   { id: "reports", label: "Reports", icon: Users },
   { id: "assessment", label: "Assessment", icon: ClipboardList },
@@ -21,6 +21,9 @@ export const BottomNavigation = ({ activeTab, onTabChange }: BottomNavigationPro
     if(user?.role === 'coach' && !navItems.find(item => item.id === "signup")){
      navItems.push({    id: "signup", label: "SignUp", icon: Users });
     }  
+    else{
+      navItems = [...navItems.filter(a=>a.id != "signup")];
+    }
   }, [user]);
   return (
     <div className="fixed bottom-0 left-0 right-0 bg-card border-t border-border shadow-elevated">

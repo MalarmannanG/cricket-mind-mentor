@@ -10,7 +10,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { getUserAll } from "@/api/users";
 import { listResultsByPlayer } from "@/api/results";
 import { ExportReport } from "../ExportReport";
-import { AssessmentEvaluation,IPlayers } from "@/types";
+import { AssessmentEvaluation, IPlayers } from "@/types";
 import { addAssesmentResult, updateAssesmentResult } from "@/api/assessmentResult";
 
 
@@ -34,11 +34,11 @@ export const PlayerReports = ({ playerId }) => {
 
     try {
       const res = playerResult;
-      if(res != null && res.id){
-      await updateAssesmentResult({ ...res, coachNotes: notes }, res.id);
+      if (res != null && res.id) {
+        await updateAssesmentResult({ ...res, coachNotes: notes }, res.id);
       }
-      else{
-        await addAssesmentResult({  coachNotes: notes, playerId: selectedPlayer.id, perQuestion: [] });
+      else {
+        await addAssesmentResult({ coachNotes: notes, playerId: selectedPlayer.id, perQuestion: [] });
       }
       localStorage.setItem(`coach-notes-${selectedPlayer}`, notes);
       toast.success("Notes saved successfully!");
@@ -127,12 +127,12 @@ export const PlayerReports = ({ playerId }) => {
               </h1>
               <p className="text-muted-foreground mt-2">Individual Performance Analysis</p>
             </div>
-            <ExportReport player={selectedPlayer} playerResult={playerResult}>
+            { selectedPlayer && <ExportReport player={selectedPlayer} playerResult={playerResult}>
               <Button variant="outline" size="sm" className="shadow-card bg-card">
                 <FileText size={16} className="mr-2" />
                 Export
               </Button>
-            </ExportReport>
+            </ExportReport>}
           </div>
         </CardHeader>
         {user?.role == "coach" && <CardContent>
@@ -205,7 +205,37 @@ export const PlayerReports = ({ playerId }) => {
               <CardTitle className="text-primary">Recommended Action Plan</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-2">
+              <article className="max-w-2xl p-6 rounded-2xl" role="article" aria-label="Affirmation and breathing routine">
+                <p className="mb-4">
+                  <strong>Affirmation Writing:</strong>
+                  <br />
+                  “I trust my training. Every mistake makes me stronger, every challenge makes me sharper.”
+                  <br />
+                  ✍️ <strong>Morning:</strong> Write it 5 times
+                  <br />
+                  ✍️ <strong>Night:</strong> Write it 3 times
+                </p>
+
+
+                <p className="mb-4">
+                  <strong>Mirror Talk (Affirmation):</strong> Stand in front of a mirror, look into your own eyes, and say the affirmation out loud with confidence and a smile.
+                  <br />
+                  <strong>Morning once, Night once</strong> — add emotion and belief as if you already own it.
+                </p>
+
+
+                <p className="mb-4">
+                  <strong>Breathing Routine (3 minutes):</strong> Practice <span className="inline-block bg-yellow-100 px-1 rounded">4-4-4-4 Box Breathing</span> for 3 minutes before pressure moments.
+                  <br />
+                  Inhale 4s → Hold 4s → Exhale 4s → Hold 4s
+                </p>
+
+
+                <p>
+                  <strong>Visualization (5 minutes):</strong> Spend 5 minutes daily imagining yourself calmly resetting after a mistake, smiling, and executing the next move with energy and focus.
+                </p>
+              </article>
+              {/* <div className="space-y-2">
                 {playerData?.actionPlan.map((action, index) => (
                   <div key={index} className="flex items-start gap-2">
                     <Badge className="bg-primary text-primary-foreground mt-0.5">
@@ -214,7 +244,7 @@ export const PlayerReports = ({ playerId }) => {
                     <span className="text-sm flex-1">{action}</span>
                   </div>
                 ))}
-              </div>
+              </div> */}
             </CardContent>
           </Card>
 
