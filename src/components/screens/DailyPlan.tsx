@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import Breathing from "./Breathing";
 import { createDailyCompletion, getDailyCompletionByPlayer, updateDailyCompletion } from "@/api/dailyCompletion";
 import { useAuth } from "@/contexts/AuthContext";
+import camera from "@/pages/Camera";
 
 export const DailyPlan = () => {
   const { user } = useAuth();
@@ -215,6 +216,10 @@ export const DailyPlan = () => {
     ctx.lineWidth = 3;
     ctx.strokeStyle = currentColor;
   }, [currentColor]);
+  const onCameraClick = () => {
+    camera.startCamera();
+    
+  }
   return (
     <div className="pb-20 p-4 space-y-6 min-h-screen bg-gradient-to-br from-background to-muted/30">
       {/* Header */}
@@ -298,7 +303,7 @@ export const DailyPlan = () => {
             <Button
               variant="outline"
               className="w-1/2 bg-gradient-sky hover:opacity-90 transition-all"
-              onClick={() => toast.info("Camera feature would open native camera in mobile app")}
+              onClick={onCameraClick}
             >
               <Camera size={16} className="mr-2" />
               Open Camera
