@@ -206,7 +206,7 @@ export const Assessment = ({ testId = "Test002", playerId = "U001" }: Assessment
               <div className="text-lg opacity-90">{category.label}</div>
             </div>
             <div className="text-sm opacity-80">
-              You scored {evaluation.rawScore} out of {evaluation.maxScore} (raw/max)
+              You scored {evaluation.rawScore} out of {evaluation.maxScore}  
             </div>
           </CardContent>
         </Card>

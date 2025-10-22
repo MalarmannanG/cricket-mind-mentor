@@ -9,7 +9,7 @@ import { Trash2, Plus, Edit2 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
 import { defaultQuestions } from '@/utils/questions';
-import { createQuestion, getAllQuestions } from '@/api/questions';
+import { createQuestion, getAllQuestions, removeQuestion } from '@/api/questions';
 import { useAuth } from '@/contexts/AuthContext';
 
 interface AssessmentManagerProps {
@@ -85,10 +85,13 @@ export function AssessmentManager() {
   };
 
   const handleRemoveQuestion = (questionId: string) => {
-    setQuestions(questions.filter(q => q.id !== questionId));
-    toast({
-      title: "Question Removed",
-      description: "Question has been removed from the assessment"
+    removeQuestion(questionId).then(() => {
+      setQuestions(questions.filter(q => q.id !== questionId));
+      toast({
+        title: "Question Removed",
+        description: "Question has been removed from the assessment"
+      });
+    }).catch(err => {
     });
   };
   const addNewOption = () => {
@@ -104,7 +107,7 @@ export function AssessmentManager() {
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle>Assessment Questions Manager</CardTitle>
+              <CardTitle>Assessment Questions</CardTitle>
               <CardDescription>
                 Manage the questions for the mental ability assessment
               </CardDescription>
@@ -131,7 +134,6 @@ export function AssessmentManager() {
                     placeholder="Enter the question text"
                   />
                 </div>
-                <Label>Options</Label>
                 {newQuestion.options.map((option, index) => (
                   <>
                     <Label>Option {String.fromCharCode(65 + index)}</Label>
@@ -182,37 +184,6 @@ export function AssessmentManager() {
                 <Button onClick={addNewOption} className="w-1/2 text-regal-blue bg-secondary hover:bg-secondary/80 gap-2 float-right">
                   Add Option
                 </Button>
-
-                {/* <div className="space-y-2">
-                  <Label htmlFor="marks">Marks</Label>
-                  <Select
-                    value={newQuestion.marks.toString()}
-                    onValueChange={(value) => setNewQuestion({ ...newQuestion, marks: parseInt(value) })}
-                  >
-                    <SelectTrigger id="marks">
-                      <SelectValue placeholder="Select marks" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="2">2 (Positive)</SelectItem>
-                      <SelectItem value="-1">-1 (Slightly Negative)</SelectItem>
-                      <SelectItem value="-2">-2 (Negative)</SelectItem>
-                      <SelectItem value="-3">-3 (Very Negative)</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div> */}
-
-                {/* <div className="space-y-2">
-                  <Label>Options</Label>
-                  {newQuestion.options.map((option, index) => (
-                    <Input
-                      key={index}
-                      value={option}
-                      onChange={(e) => handleOptionChange(index, e.target.value)}
-                      placeholder={`Option ${index + 1}`}
-                    />
-                  ))}
-                </div> */}
-
                 <Button onClick={handleAddQuestion} className="w-full">
                   Add Question
                 </Button>
@@ -235,7 +206,7 @@ export function AssessmentManager() {
                       {index + 1}
                     </div>
                     <div className="flex-1 space-y-3">
-                      <div className="flex gap-4" style={{justifyContent: 'space-between'}}>
+                      <div className="flex gap-4" style={{ justifyContent: 'space-between' }}>
                         <p className="font-medium text-foreground">{question.question}</p>
                         <Button
                           variant="ghost"
@@ -248,21 +219,21 @@ export function AssessmentManager() {
                       </div>
                       <div className="space-y-1">
                         {question.options.map((option, optIndex) => (
-                          <div key={optIndex} style={{boxShadow: '0 3px 3px -2px rgba(0, 0, 0, 0.1)', padding:'10px 0px 10px 0px'}}>
+                          <div key={optIndex} style={{ boxShadow: '0 3px 3px -2px rgba(0, 0, 0, 0.1)', padding: '10px 0px 10px 0px' }}>
                             <div key={optIndex} className="text-sm text-muted-foreground pl-">
                               <span className='font-medium'>{String.fromCharCode(65 + optIndex)}</span>. {option.text}
                             </div>
-                            <div className="text-sm text-muted-foreground pl-" style={{justifyContent: 'space-between', display: 'flex', paddingRight:'1rem'}}>
+                            <div className="text-sm text-muted-foreground pl-" style={{ justifyContent: 'space-between', display: 'flex', paddingRight: '1rem' }}>
                               <span className="text-muted-foreground">
                                 <span className='font-medium'>Category</span>: <span className="text-sm text-muted-foreground">{option.logic}</span>
                               </span>
                               <span className="text-muted-foreground">
-                                 <span className={`font-medium ${option.mark > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                <span className={`font-medium ${option.mark > 0 ? 'text-green-600' : 'text-red-600'}`}>
                                   {option.mark > 0 ? '+' : ''}{option.mark}
                                 </span>
                               </span>
                             </div>
-                            </div>
+                          </div>
                         ))}
                       </div>
 

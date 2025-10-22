@@ -34,21 +34,20 @@ const SignUp = () => {
         if (res) {
           toast({
             title: "Account created",
-            description: "Welcome to G-Training!",
+            description: "",
           });
-
           setLoading(false);
         }
-        toast({
-          title: "Signup failed",
-          description: "User already exists",
-          variant: "destructive",
-        });
+        else {
+          toast({
+            title: "Signup failed",
+            description: "User already exists",
+            variant: "destructive",
+          });
+          setLoading(false);
+        }
       }).catch((err) => {
-
-
         console.error(err);
-
         toast({
           title: "Signup failed",
           description: "Please fill in all fields",
@@ -61,7 +60,7 @@ const SignUp = () => {
 
 
   return (
-    <div style={{ maxWidth: 400, margin: '2rem auto' }}>
+    <div style={{ maxWidth: 400, margin: '2rem auto', padding:'0 1rem' }} >
       <h2>Sign Up</h2>
       <form onSubmit={handleSignup} className="space-y-4">
         <div className="space-y-2">
@@ -76,11 +75,11 @@ const SignUp = () => {
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="signup-email">Email</Label>
+          <Label htmlFor="signup-email">User Name</Label>
           <Input
             id="signup-email"
-            type="email"
-            placeholder="coach@cricket.com"
+            type="text"
+            placeholder="User Name"
             value={signupEmail}
             onChange={(e) => setSignupEmail(e.target.value)}
             required

@@ -69,7 +69,7 @@ export async function evaluateAndSaveResult(testId, playerId, answersMap) {
     rawScore: evaluation.rawScore,
     maxScore: evaluation.maxScore,
     percent: evaluation.percent,
-    createdAt: serverTimestamp()
+    createdAt: serverTimestamp(),
   });
 
   // save answers as subcollection under results/{resultId}/answers/{Q1}

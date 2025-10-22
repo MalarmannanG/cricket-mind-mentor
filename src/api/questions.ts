@@ -31,4 +31,10 @@ export async function getAllQuestions() {
     });
     return filteredDocs.sort((a, b) => parseInt(a.order) - parseInt(b.order));
 }
+
+export async function removeQuestion(id: string) {
+  await deleteDoc(doc(db, "assessments", id));
+ return true;
+}
+
  

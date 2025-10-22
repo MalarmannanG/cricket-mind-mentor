@@ -84,8 +84,9 @@ export function AssessmentTest() {
   async function submitAndSave(answersPayload: AnswersMap): Promise<void> {
     setSaving(true);
     try {
-      const res: { id: string, evaluation: AssessmentEvaluation } = await evaluateAndSaveResult(user.id, answersPayload, assessmentId);
-      setEvaluation(res.evaluation ?? null);
+      const res = await evaluateAndSaveResult(user.id, answersPayload, assessmentId);
+      setAssessmentId(res.id);
+      setEvaluation((res.evaluation as AssessmentEvaluation) ?? null);
       setShowResults(true);
       toast.success("Assessment completed and saved.");
     } catch (err) {
@@ -164,7 +165,7 @@ export function AssessmentTest() {
               <div className="text-lg opacity-90">{category.label}</div>
             </div>
             <div className="text-sm opacity-80">
-              You scored {evaluation.rawScore} out of {evaluation.maxScore} (raw/max)
+              You scored {evaluation.rawScore} out of {evaluation.maxScore}  
             </div>
           </CardContent>
         </Card>
