@@ -7,10 +7,12 @@ import { toast } from "sonner";
 import Breathing from "./Breathing";
 import { createDailyCompletion, getDailyCompletionByPlayer, updateDailyCompletion } from "@/api/dailyCompletion";
 import { useAuth } from "@/contexts/AuthContext";
-import camera from "@/pages/Camera";
+import Affirmation from "./Affirmation";
+ 
 
 export const DailyPlan = () => {
   const { user } = useAuth();
+   const camera = useRef(null);
   const [breathingTime, setBreathingTime] = useState(180); // 3 minutes in seconds
   const [visualizationTime, setVisualizationTime] = useState(300); // 5 minutes in seconds
   const [breathingActive, setBreathingActive] = useState(false);
@@ -216,10 +218,7 @@ export const DailyPlan = () => {
     ctx.lineWidth = 3;
     ctx.strokeStyle = currentColor;
   }, [currentColor]);
-  const onCameraClick = () => {
-    camera.startCamera();
-    
-  }
+  
   return (
     <div className="pb-20 p-4 space-y-6 min-h-screen bg-gradient-to-br from-background to-muted/30">
       {/* Header */}
@@ -288,7 +287,8 @@ export const DailyPlan = () => {
       </Card>
 
       {/* Camera Mark Button */}
-      <Card className="shadow-card">
+      <Affirmation onCompletedCamera={onCompletedCamera} />
+      {/* <Card className="shadow-card">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Camera size={20} />
@@ -300,10 +300,11 @@ export const DailyPlan = () => {
         </CardHeader>
         <CardContent>
           <div className="flex gap-4">
+            <Camera ref={camera} />
             <Button
               variant="outline"
               className="w-1/2 bg-gradient-sky hover:opacity-90 transition-all"
-              onClick={onCameraClick}
+              onClick={ () => {window.open('https://www.onlinemictest.com/webcam-test/', '_blank')}}
             >
               <Camera size={16} className="mr-2" />
               Open Camera
@@ -316,7 +317,7 @@ export const DailyPlan = () => {
             </Button>
           </div>
         </CardContent>
-      </Card>
+      </Card> */}
 
       {/* Breathing Timer */}
       <Card className="shadow-success border-success/20 bg-success/5">
